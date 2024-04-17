@@ -1,5 +1,4 @@
-﻿/*
-using AutonomousParking.Common.Extensions;
+﻿using AutonomousParking.Common.Extensions;
 using AutonomousParking.ParkingLot.Data;
 using UnityEngine;
 
@@ -30,4 +29,4 @@ namespace AutonomousParking.Car.Creation
                 car.Rotate(car.up, straightAngle);
         }
     }
-}*/
+}

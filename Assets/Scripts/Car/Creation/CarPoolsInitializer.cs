@@ -1,5 +1,4 @@
-﻿/*
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AutonomousParking.Common;
 using AutonomousParking.Common.Patterns.Factory;
 using AutonomousParking.Common.Patterns.Pool;
@@ -28,4 +27,4 @@ namespace AutonomousParking.Car.Creation
             NextRandomCarPoolProvider = new NextRandomItemProvider<IObjectPool<Transform>>(CarPools);
         }
     }
-}*/
+}

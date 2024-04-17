@@ -7,6 +7,7 @@ using Unity.MLAgents.Sensors;
 using UnityEngine;
 using ParkingManager;
 using System.Collections.Generic;
+using AutonomousParking.ParkingLot.ObjectPlacers;
 
 namespace AutonomousParking.Agents
 {
@@ -18,36 +19,35 @@ namespace AutonomousParking.Agents
         public CarData CarData { get; set; }
         public ParkingAgentTargetData TargetData { get; set; }
         public ParkingAgentCollisionData CollisionData { get; set; }
-        
-        //public ParkingLotEnteringCarPlacer AgentPlacer { get; set; }
-        private List<Transform> TargetPlacer;
-        //public ParkingLotParkedCarsPlacer ParkedCarsPlacer { get; set; }
-        
+
+        public ParkingLotEnteringCarPlacer AgentPlacer { get; set; }
+        public ParkingLotAgentTargetPlacer TargetPlacer { get; set; }
+        public ParkingLotParkedCarsPlacer ParkedCarsPlacer { get; set; }
+
         public ParkingAgentActionsHandler ActionsHandler { get; set; }
         public ParkingAgentMetricsCalculator MetricsCalculator { get; set; }
         public ParkingAgentRewardCalculator RewardCalculator { get; set; }
         public ParkingAgentObservationsCollector ObservationsCollector { get; set; }
         public ParkingAgentCollisionsHandler CollisionsHandler { get; set; }
-        //public ParkingAgentStatsRecorder StatsRecorder { get; set; }
-        /*
+        public ParkingAgentStatsRecorder StatsRecorder { get; set; }
+        
         public override void Initialize()
         {
             var initializer = GetComponentInParent<ParkingAgentInitializer>();
             initializer.InitializeExternal(this);
             initializer.InitializeData(this);
             initializer.InitializeComponents(this);
-        }*/
+        }
 
         public override void OnEpisodeBegin()
         {
-            //ParkingManager parkingManager = GameObject.FindObjectOfType<ParkingManager.ParkingManager>();
-            //AgentData.Reset();
-            //CarData.Reset();
+            AgentData.Reset();
+            CarData.Reset();
             
-           //ParkedCarsPlacer.Remove();
-            //ParkedCarsPlacer.Place();
-            //AgentPlacer.Place(AgentData.Transform);
-            //TargetPlacer = parkingManager.TargetPlace;
+            ParkedCarsPlacer.Remove();
+            ParkedCarsPlacer.Place();
+            AgentPlacer.Place(AgentData.Transform);
+            TargetPlacer.Place(TargetData.Transform, AgentData.Transform);
 
             MetricsCalculator.CalculateInitialTargetTrackingMetrics();
         }
@@ -70,7 +70,7 @@ namespace AutonomousParking.Agents
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
 
             if (isLastStep)
-                //StatsRecorder.RecordStats();
+                StatsRecorder.RecordStats();
 
             if (isNeededToEndEpisode)
                 EndEpisode();

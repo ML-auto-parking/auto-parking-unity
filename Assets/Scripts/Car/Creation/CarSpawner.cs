@@ -1,5 +1,4 @@
-﻿/*
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using AutonomousParking.ParkingLot.Data;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -30,4 +29,4 @@ namespace AutonomousParking.Car.Creation
             cars.Clear();
         }
     }
-}*/
+}

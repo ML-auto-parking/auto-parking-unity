@@ -1,7 +1,7 @@
-﻿/*
-using AutonomousParking.Agents.Data;
+﻿using AutonomousParking.Agents.Data;
 using AutonomousParking.Car;
 using UnityEngine;
+using AutonomousParking.ParkingLot.ObjectPlacers;
 
 namespace AutonomousParking.Agents.Components
 {
@@ -49,4 +49,4 @@ namespace AutonomousParking.Agents.Components
             agent.StatsRecorder = new ParkingAgentStatsRecorder(collisionData, targetTrackingData);
         }
     }
-}*/
+}
