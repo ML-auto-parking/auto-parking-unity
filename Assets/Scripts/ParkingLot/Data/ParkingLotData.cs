@@ -30,10 +30,6 @@ namespace AutonomousParking.ParkingLot.Data
             CurrentlyAvailableVerticalParkingSpots = new List<Transform>(AvailableVerticalParkingSpots);
 
             CurrentlyAvailableParkingSpots = new List<Transform>();
-            // CurrentlyAvailableHorizontalParkingSpots의 모든 요소를 CurrentlyAvailableParkingSpots에 추가합니다.
-            CurrentlyAvailableParkingSpots.AddRange(CurrentlyAvailableHorizontalParkingSpots);
-            // CurrentlyAvailableVerticalParkingSpots의 모든 요소를 CurrentlyAvailableParkingSpots에 추가합니다.
-            CurrentlyAvailableParkingSpots.AddRange(CurrentlyAvailableVerticalParkingSpots);
         }
 
         // Reset 메소드는 주차장의 상태를 초기화합니다. 모든 주차 공간을 다시 사용 가능하게 설정합니다.
@@ -41,6 +37,7 @@ namespace AutonomousParking.ParkingLot.Data
         {
             CurrentlyAvailableHorizontalParkingSpots.Clear();  // 현재 목록을 비웁니다.
             CurrentlyAvailableVerticalParkingSpots.Clear();  // 현재 목록을 비웁니다.
+            CurrentlyAvailableParkingSpots.Clear();
 
             CurrentlyAvailableHorizontalParkingSpots.AddRange(AvailableHorizontalParkingSpots);
             CurrentlyAvailableVerticalParkingSpots.AddRange(AvailableVerticalParkingSpots);

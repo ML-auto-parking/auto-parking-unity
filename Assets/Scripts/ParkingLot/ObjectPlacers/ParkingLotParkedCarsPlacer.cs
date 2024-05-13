@@ -22,6 +22,11 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
             // 각 주차 공간에 차량을 배치합니다.
             parkingSpotsToOccupy.ForEach(parkingSpot => carSpawner.Spawn(parkingSpot, parkingLotData.ParkingSpotData));
 
+            // 랜덤으로 비워둔 곳을 다시 availableparkingspot 지점에 저장
+            List<Transform> availableParkingSpots = parkingLotData.CurrentlyAvailableParkingSpots;
+            availableParkingSpots.AddRange(parkingLotData.CurrentlyAvailableVerticalParkingSpots);
+            availableParkingSpots.AddRange(parkingLotData.CurrentlyAvailableHorizontalParkingSpots);
+
             // PickRandomParkingSpotsToOccupy 메소드는 무작위로 차량을 배치할 주차 공간을 결정합니다.
             List<Transform> PickRandomParkingSpotsToOccupy()
             {
