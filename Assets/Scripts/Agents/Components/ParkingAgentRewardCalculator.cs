@@ -1,5 +1,8 @@
 using AutonomousParking.Agents.Data;
 using AutonomousParking.Common.Extensions;
+using System;
+using Unity.MLAgents;
+using UnityEngine;
 
 namespace AutonomousParking.Agents.Components
 {
@@ -9,7 +12,7 @@ namespace AutonomousParking.Agents.Components
         private readonly ParkingAgentData agentData; // 주차 에이전트 데이터
         private readonly ParkingAgentRewardData rewardData; // 주차 에이전트 보상 데이터
         private readonly ParkingAgentTargetTrackingData targetTrackingData; // 주차 에이전트 타겟 추적 데이터
-
+        public ParkingAgent Agent;
         // 생성자
         public ParkingAgentRewardCalculator(ParkingAgentCollisionData agentCollisionData, ParkingAgentData agentData,
             ParkingAgentRewardData rewardData, ParkingAgentTargetTrackingData targetTrackingData)
@@ -45,7 +48,13 @@ namespace AutonomousParking.Agents.Components
         }
 
         // 불활성에 대한 보상을 계산하는 메서드입니다.
-        private float CalculateRewardForInactivity() => rewardData.MaxRewardForInactivityPerStep / agentData.StepCount;
+        private float CalculateRewardForInactivity()
+        {
+            Debug.Log(Agent.MaxStep);
+            //float exponent = Agent.MaxStep-rewardData.Shift;
+            //float scalingfactor = rewardData.StepRewardThreshold / (float)Math.Exp(exponent);
+            return (float)Math.Exp(agentData.StepCount-rewardData.Shift);
+        }
 
         // 타겟까지의 거리 감소에 따른 보상을 계산합니다.
         private float CalculateRewardForDecreasingDistanceToTarget() =>

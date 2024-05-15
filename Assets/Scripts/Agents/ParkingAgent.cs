@@ -65,7 +65,7 @@ namespace AutonomousParking.Agents
             ActionsHandler.HandleInputActions(actions);
             MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
-
+            //Debug.Log(GetCumulativeReward());
             bool isNeededToEndEpisode = CollisionData.IsAnyCollision || TargetTrackingData.IsPerfectlyParked;
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
 
