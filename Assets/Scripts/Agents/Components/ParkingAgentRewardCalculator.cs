@@ -48,8 +48,9 @@ namespace AutonomousParking.Agents.Components
         // 불활성에 대한 보상을 계산하는 메서드입니다.
         private float CalculateRewardForInactivity()
         {
-            float scalingfactor = -0.02f;
-            return rewardData.StepRewardThreshold / (1+(float)Math.Exp(scalingfactor*(agentData.StepCount-rewardData.Shift)));
+            //float scalingfactor = -0.02f;
+            //return rewardData.StepRewardThreshold / (1+(float)Math.Exp(scalingfactor*(agentData.StepCount-rewardData.Shift)));
+            return -1;
         }
 
         // 타겟까지의 거리 감소에 따른 보상을 계산합니다.
