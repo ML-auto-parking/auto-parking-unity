@@ -9,8 +9,9 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
     {
         [SerializeField] private ParkingLotData parkingLotData;
 
-        public void Place(Transform target, Transform agent)
+        public void Place(Transform target,List<Transform> Empty, Transform agent)
         {
+            Empty.AddRange(parkingLotData.CurrentlyAvailableParkingSpots);
             Transform closestParkingSpot = FindClosestParkingSpot(parkingLotData.CurrentlyAvailableParkingSpots);
             target.position = closestParkingSpot.position;
             target.rotation = closestParkingSpot.rotation;

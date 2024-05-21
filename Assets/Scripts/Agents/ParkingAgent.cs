@@ -5,9 +5,11 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
+using UnityEngine.UI;
 using ParkingManager;
 using System.Collections.Generic;
 using AutonomousParking.ParkingLot.ObjectPlacers;
+using AutonomousParking.ParkingLot.Data;
 
 namespace AutonomousParking.Agents
 {
@@ -19,18 +21,21 @@ namespace AutonomousParking.Agents
         public CarData CarData { get; set; }
         public ParkingAgentTargetData TargetData { get; set; }
         public ParkingAgentCollisionData CollisionData { get; set; }
+        //public ParkingAgentEmptyData EmptyData1 { get; set; }
+        //public ParkingAgentEmptyData EmptyData2 { get; set; }
 
         public ParkingLotEnteringCarPlacer AgentPlacer { get; set; }
         public ParkingLotAgentTargetPlacer TargetPlacer { get; set; }
         public ParkingLotParkedCarsPlacer ParkedCarsPlacer { get; set; }
-
+        //public ParkingLotAgentEmptyPlacer EmptyPlacer { get; set; }
         public ParkingAgentActionsHandler ActionsHandler { get; set; }
         public ParkingAgentMetricsCalculator MetricsCalculator { get; set; }
         public ParkingAgentRewardCalculator RewardCalculator { get; set; }
         public ParkingAgentObservationsCollector ObservationsCollector { get; set; }
         public ParkingAgentCollisionsHandler CollisionsHandler { get; set; }
         public ParkingAgentStatsRecorder StatsRecorder { get; set; }
-        
+        public Text rewardText;
+        public List<Transform> EmptyCenter;
         public override void Initialize()
         {
             var initializer = GetComponentInParent<ParkingAgentInitializer>();
@@ -43,11 +48,15 @@ namespace AutonomousParking.Agents
         {
             AgentData.Reset();
             CarData.Reset();
+            EmptyCenter.Clear();
             
             ParkedCarsPlacer.Remove();
             ParkedCarsPlacer.Place();
             AgentPlacer.Place(AgentData.Transform);
-            TargetPlacer.Place(TargetData.Transform, AgentData.Transform);
+            //EmptyPlacer.Place(EmptyData1.Transform, EmptyData2.Transform);
+            //Debug.Log(EmptyData1.Transform+"\n"+EmptyData2.Transform);
+            TargetPlacer.Place(TargetData.Transform, EmptyCenter, AgentData.Transform);
+            Debug.Log(TargetData.Transform.position+"\n"+EmptyCenter[0].position+"\n"+EmptyCenter[1].position);
 
             MetricsCalculator.CalculateInitialTargetTrackingMetrics();
         }
@@ -65,6 +74,7 @@ namespace AutonomousParking.Agents
             ActionsHandler.HandleInputActions(actions);
             MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
+            rewardText.text = "Reward: " + GetCumulativeReward().ToString("F2");
             bool isNeededToEndEpisode = CollisionData.IsAnyCollision || TargetTrackingData.IsPerfectlyParked;
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
 
