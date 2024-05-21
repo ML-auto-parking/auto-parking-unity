@@ -15,14 +15,18 @@ action_dim = 24
 load_model = False
 train_mode = True
 
+WHEEL_TORQUE_MAX = 11
+STEERING_ANGLE_MAX = 11
+BRAKE_STATE_MAX = 2
+
 batch_size = 64
 mem_maxlen = 10000
-discount_factor = 0.9
+discount_factor = 0.85
 learning_rate = 0.00025
 
-run_step = 50000 if train_mode else 0 # 훈련 스텝
-test_step = 10000 # 테스트 스텝
-train_start_step = 10000 # 초기 탐험
+run_step = 20000 if train_mode else 0 # 훈련 스텝
+test_step = 1 # 테스트 스텝
+train_start_step = 1 # 초기 탐험
 target_update_step = 100
 
 print_interval = 10
@@ -36,7 +40,7 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 
 # 유니티 환경 경로
 game = "AutoParking"
-version = 21
+version = 24
 env_name = f'../Env/ap-{version}'
 
 # 모델 저장 및 불러오기 경로
@@ -148,26 +152,29 @@ class DQNAgent:
             self.target_network.load_state_dict(checkpoint["network"])
             self.optimizer.load_state_dict(checkpoint["optimizer"])
 
-    def get_action(self, image, vector, training=True):
+    def get_action(self, image, vector, agent_pos, training=True):
         self.network.eval()
         epsilon = self.epsilon if training else epsilon_eval
 
         if epsilon > random.random():
-            wheel_torque = np.random.randint(0, 11, size=(vector.shape[0], 1))  # 휠 토크 (11개의 이산 값)
-            steering_angle = np.random.randint(0, 11, size=(vector.shape[0], 1))  # 조향 각도 (11개의 이산 값)
-            brake_state = np.random.randint(0, 2, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
+            wheel_torque = np.random.randint(0, WHEEL_TORQUE_MAX, size=(vector.shape[0], 1))  # 휠 토크 (11개의 이산 값)
+            steering_angle = np.random.randint(0, STEERING_ANGLE_MAX, size=(vector.shape[0], 1))  # 조향 각도 (11개의 이산 값)
+            brake_state = np.random.randint(0, BRAKE_STATE_MAX, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
             action = np.concatenate([wheel_torque, steering_angle, brake_state], axis=1)
         else:
             with torch.no_grad():
                 image_tensor = torch.FloatTensor(image).to(device).permute(0, 3, 1,
                                                                            2)  # (batch, height, width, channels) -> (batch, channels, height, width)
                 vector_tensor = torch.FloatTensor(vector).to(device)
-                q = self.network(image_tensor, vector_tensor)
+                agent_pos_tensor = torch.FloatTensor(agent_pos).to(device)
+                q = self.network(image_tensor, vector_tensor, agent_pos_tensor)
 
                 # q-values에서 이산 행동을 추출
-                wheel_torque = torch.clamp((q[:, 0] * 4).round().int(), 0, 4).cpu().numpy()  # 휠 토크 (0~4)
-                steering_angle = torch.clamp((q[:, 1] * 4).round().int(), 0, 4).cpu().numpy()  # 조향 각도 (0~4)
-                brake_state = torch.clamp(q[:, 2].round().int(), 0, 1).cpu().numpy()  # 브레이크 상태 (0 또는 1)
+                wheel_torque = torch.clamp((q[:, 0] * WHEEL_TORQUE_MAX).round().int(), 0,
+                                           WHEEL_TORQUE_MAX).cpu().numpy()  # 휠 토크 (0~4)
+                steering_angle = torch.clamp((q[:, 1] * STEERING_ANGLE_MAX).round().int(), 0,
+                                             STEERING_ANGLE_MAX).cpu().numpy()  # 조향 각도 (0~4)
+                brake_state = torch.clamp(q[:, 2].round().int(), 0, BRAKE_STATE_MAX).cpu().numpy()  # 브레이크 상태 (0 또는 1)
 
                 action = np.stack([wheel_torque, steering_angle, brake_state], axis=1)
 
@@ -213,13 +220,18 @@ class DQNAgent:
 
         actions = actions.squeeze(1).long()
 
+        print("q_values: ", q_values)
+        print("q_values.shape: ", q_values.shape)
+        print("actions: ", actions)
+        print("actions.shape: ", actions.shape)
+
         # 각 행동에 대해 one-hot 인코딩 수행
-        print("wheel_torque: ", actions[:, 0])
-        print("steering_angle: ", actions[:, 1])
-        print("brake_state: ", actions[:, 2])
-        wheel_torque_one_hot = F.one_hot(actions[:, 0], num_classes=11).to(device)
-        steering_angle_one_hot = F.one_hot(actions[:, 1], num_classes=11).to(device)
-        brake_state_one_hot = F.one_hot(actions[:, 2], num_classes=2).to(device)
+        # print("wheel_torque: ", actions[:, 0])
+        # print("steering_angle: ", actions[:, 1])
+        # print("brake_state: ", actions[:, 2])
+        wheel_torque_one_hot = F.one_hot(actions[:, 0], num_classes=WHEEL_TORQUE_MAX).to(device)
+        steering_angle_one_hot = F.one_hot(actions[:, 1], num_classes=STEERING_ANGLE_MAX).to(device)
+        brake_state_one_hot = F.one_hot(actions[:, 2], num_classes=BRAKE_STATE_MAX).to(device)
 
         # one-hot 인코딩된 행동을 결합
         one_hot_action = torch.cat((wheel_torque_one_hot, steering_angle_one_hot, brake_state_one_hot), dim=1).float()
@@ -299,7 +311,7 @@ if __name__ == '__main__':
             engine_configuration_channel.set_configuration_parameters(time_scale=1.0, target_frame_rate=60)
             env.reset()
 
-        decision_steps, terminal_steps = env.get_steps(behavior_name)
+        decision_steps, terminal_steps = env.get_steps(behavior_name)  # 각 스텝에서의 보상을 가져옴
         if len(decision_steps) > 0:
             vector = decision_steps.obs[0]  # 벡터 데이터
             image = decision_steps.obs[1]  # 이미지 데이터
@@ -349,7 +361,7 @@ if __name__ == '__main__':
             if episode % print_interval == 0:
                 mean_score = np.mean(scores)
                 mean_loss = np.mean(losses)
-                agent.write_summray(mean_score, mean_loss, agent.epsilon, step)
+                agent.write_summary(mean_score, mean_loss, agent.epsilon, step)
                 losses, scores = [], []
 
                 print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " + \
