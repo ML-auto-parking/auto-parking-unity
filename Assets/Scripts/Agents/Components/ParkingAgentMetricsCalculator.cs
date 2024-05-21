@@ -40,7 +40,7 @@ namespace AutonomousParking.Agents.Components
             Vector3.Distance(agentData.Transform.position, targetData.Transform.position);
 
         private float CalculateNormalizedDistanceToTarget() =>
-            data.DistanceToTarget.Normalize(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+            data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateAngleToTarget() =>
             Quaternion.Angle(agentData.Transform.rotation, targetData.Transform.rotation);

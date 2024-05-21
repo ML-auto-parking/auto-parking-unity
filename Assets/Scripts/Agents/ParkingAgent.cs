@@ -79,7 +79,6 @@ namespace AutonomousParking.Agents
 
         public override void Heuristic(in ActionBuffers actionsOut)
         {
-            ActionsHandler.HandleHeuristicInputContinuousActions(actionsOut.ContinuousActions);
             ActionsHandler.HandleHeuristicInputDiscreteActions(actionsOut.DiscreteActions);
         }
     }

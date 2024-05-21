@@ -19,6 +19,19 @@ namespace AutonomousParking.Common.Extensions
             return normalizedValue;
         }
 
+        public static float NormalizeWithNegative(this float value, float min, float max)
+        {
+            // 정규화된 범위의 최소값과 최대값을 정의합니다.
+            const float minNormalizedValue = -1f, maxNormalizedValue = 1f;
+            // 입력된 값의 범위를 계산합니다.
+            float range = max - min;
+            // range가 0에 가깝다면 minNormalizedValue를 사용하고, 그렇지 않다면 범위로 정규화합니다.
+            float normalizedValue = Mathf.Approximately(range, default) ? minNormalizedValue : (value - min) / range;
+            // 정규화된 값이 항상 0과 1 사이가 되도록 클램핑합니다.
+            normalizedValue = Mathf.Clamp(normalizedValue, minNormalizedValue, maxNormalizedValue);
+            return normalizedValue;
+        }
+
         // ChangeBounds 메서드는 float 값의 범위를 변경합니다.
         public static float ChangeBounds(this float value, float oldMin, float oldMax, float newMin, float newMax) =>
             // 먼저 값의 범위를 정규화한 후, 새로운 범위로 조정합니다.

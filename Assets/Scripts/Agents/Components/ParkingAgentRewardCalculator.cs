@@ -26,10 +26,12 @@ namespace AutonomousParking.Agents.Components
         {
 
             // 효율성 보상 계산
-            float reward = CalculateRewardForInactivity(); // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
+            float reward = -1; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
             // 정확도 보상 계산
             reward += CalculateRewardForDecreasingDistanceToTarget(); // 타겟까지의 거리 감소에 대한 보상 계산
+            Debug.Log(CalculateRewardForDecreasingDistanceToTarget());
             if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) // 타겟까지의 각도 감소에 대한 보상 계산
+                Debug.Log(reward += CalculateRewardForDecreasingAngleToTarget());
                 reward += CalculateRewardForDecreasingAngleToTarget();
 
             if (agentCollisionData.IsAnyCollision) // 충돌에 대한 보상 계산
@@ -43,13 +45,6 @@ namespace AutonomousParking.Agents.Components
             }
 
             return reward;
-        }
-
-        // 불활성에 대한 보상을 계산하는 메서드입니다.
-        private float CalculateRewardForInactivity()
-        {
-            float scalingfactor = -0.02f;
-            return rewardData.StepRewardThreshold / (1+(float)Math.Exp(scalingfactor*(agentData.StepCount-rewardData.Shift)));
         }
 
         // 타겟까지의 거리 감소에 따른 보상을 계산합니다.
