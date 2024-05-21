@@ -29,10 +29,10 @@ mem_maxlen = 10000
 discount_factor = 0.85
 learning_rate = 0.0005
 
-run_step = 20000 if train_mode else 0 # 훈련 스텝
-test_step = 40000 # 테스트 스텝
-train_start_step = 10000 # 초기 탐험
-target_update_step = 100
+run_step = 700*10000 if train_mode else 0 # 훈련 스텝
+test_step = 10000 # 테스트 스텝
+train_start_step = 700*10000/10 # 초기 탐험
+target_update_step = 1000
 
 print_interval = 10
 save_interval = 100
@@ -45,7 +45,7 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 
 # 유니티 환경 경로
 game = "AutoParking"
-version = 26
+version = 29
 env_name = f'../Env/ap-{version}'
 
 # 모델 저장 및 불러오기 경로
@@ -188,7 +188,7 @@ class DQNAgent:
                 # print(f"Clamped Steering Angle: {steering_angle}, Q-values: {steering_angle_q_values.cpu().numpy()}")
                 # print(f"Clamped Brake State: {brake_state}, Q-values: {brake_state_q_values.cpu().numpy()}")
 
-                action = np.stack([wheel_torque, steering_angle, 0], axis=1)
+                action = np.stack([wheel_torque, steering_angle, [0]], axis=1)
                 print(f"Action: {action}")
 
         return action
@@ -313,7 +313,7 @@ if __name__ == '__main__':
 
     behavior_name = list(env.behavior_specs.keys())[0]
     spec = env.behavior_specs[behavior_name]
-    engine_configuration_channel.set_configuration_parameters(time_scale=12.0, target_frame_rate=60)
+    engine_configuration_channel.set_configuration_parameters(time_scale=7.0, target_frame_rate=60)
     decision_steps, terminal_steps = env.get_steps(behavior_name)
 
     vector_obs = decision_steps.obs[VECTOR_OBS]
@@ -333,7 +333,7 @@ if __name__ == '__main__':
                 agent.save_model()
             print("TEST START")
             train_mode = False
-            engine_configuration_channel.set_configuration_parameters(time_scale=1.0, target_frame_rate=60)
+            engine_configuration_channel.set_configuration_parameters(time_scale=3.0, target_frame_rate=60)
             env.reset()
 
         decision_steps, terminal_steps = env.get_steps(behavior_name)
