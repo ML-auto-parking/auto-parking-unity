@@ -46,7 +46,11 @@ namespace AutonomousParking.ParkingLot.Data
             {
                 CurrentlyAvailableHorizontalParkingSpots[i].GetComponent<ParkingSpotArea>().enabled=false;
                 CurrentlyAvailableHorizontalParkingSpots[i].GetComponent<Collider>().enabled=false;
-
+            }
+            for (int i = 0; i<CurrentlyAvailableVerticalParkingSpots.Count; i++)
+            {
+                CurrentlyAvailableVerticalParkingSpots[i].GetComponent<ParkingSpotArea>().enabled=false;
+                CurrentlyAvailableVerticalParkingSpots[i].GetComponent<Collider>().enabled=false;
             }
         }
     }
