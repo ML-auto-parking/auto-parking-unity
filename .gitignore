@@ -73,3 +73,5 @@ crashlytics-build.properties
 
 /[Aa]ssets/ML-Agents/*
 /[Pp]ackages/manifest.json
+/Env/*
+/dqn-20/saved_models/*
