@@ -9,6 +9,7 @@ using ParkingManager;
 using System.Collections.Generic;
 using AutonomousParking.ParkingLot.ObjectPlacers;
 using AutonomousParking.ParkingLot.Data;
+using UnityEditorInternal;
 
 namespace AutonomousParking.Agents
 {
@@ -33,7 +34,7 @@ namespace AutonomousParking.Agents
         public ParkingAgentObservationsCollector ObservationsCollector { get; set; }
         public ParkingAgentCollisionsHandler CollisionsHandler { get; set; }
         public ParkingAgentStatsRecorder StatsRecorder { get; set; }
-        public List<Transform> EmptyCenter;
+        public List<Component> EmptyCenter;
         public override void Initialize()
         {
             var initializer = GetComponentInParent<ParkingAgentInitializer>();
@@ -51,12 +52,11 @@ namespace AutonomousParking.Agents
             ParkedCarsPlacer.Remove();
             ParkedCarsPlacer.Place();
             AgentPlacer.Place(AgentData.Transform);
-            //EmptyPlacer.Place(EmptyData1.Transform, EmptyData2.Transform);
             //Debug.Log(EmptyData1.Transform+"\n"+EmptyData2.Transform);
             TargetPlacer.Place(TargetData.Transform, EmptyCenter, AgentData.Transform);
-            Debug.Log(TargetData.Transform.position+"\n"+EmptyCenter[0].position+"\n"+EmptyCenter[1].position);
+            Debug.Log(TargetData.Transform.position+"\n"+EmptyCenter[0].transform.position+"\n"+EmptyCenter[1].transform.position);
 
-            MetricsCalculator.CalculateInitialTargetTrackingMetrics();
+            //MetricsCalculator.CalculateInitialTargetTrackingMetrics();
         }
 
         public override void CollectObservations(VectorSensor sensor)
@@ -70,7 +70,7 @@ namespace AutonomousParking.Agents
         public override void OnActionReceived(ActionBuffers actions)
         {
             ActionsHandler.HandleInputActions(actions);
-            MetricsCalculator.CalculateTargetTrackingMetrics();
+            if(AgentData.isInTargetArea) MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
             bool isNeededToEndEpisode = CollisionData.IsAnyCollision || TargetTrackingData.IsPerfectlyParked;
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
@@ -87,6 +87,13 @@ namespace AutonomousParking.Agents
         public override void Heuristic(in ActionBuffers actionsOut)
         {
             ActionsHandler.HandleHeuristicInputDiscreteActions(actionsOut.DiscreteActions);
+        }
+        public void EnterArea(Transform Target)
+        {
+            AgentData.isInTargetArea = true;
+            TargetData.transform.position = Target.position;
+            TargetData.transform.rotation = Target.rotation;
+            Debug.Log(TargetData.Transform.position);
         }
     }
 }
