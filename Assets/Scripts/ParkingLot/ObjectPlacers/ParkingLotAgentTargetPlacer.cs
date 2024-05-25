@@ -13,7 +13,7 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         {
             Transform closestParkingSpot = FindClosestParkingSpot(parkingLotData.CurrentlyAvailableParkingSpots);
             target.position = closestParkingSpot.position;
-            target.rotation = closestParkingSpot.rotation * Quaternion.Euler(0f, 90f, 0f);
+            target.rotation = closestParkingSpot.rotation;
 
             Transform FindClosestParkingSpot(IEnumerable<Transform> availableParkingSpots) =>
                 availableParkingSpots.MinBy(parkingSpot => Vector3.Distance(agent.position, parkingSpot.position));
