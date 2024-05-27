@@ -36,11 +36,18 @@ namespace AutonomousParking.Agents.Components
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
         }
 
-        private float CalculateDistanceToTarget() =>
-            Vector3.Distance(agentData.Transform.position, targetData.Transform.position);
+        private float CalculateDistanceToTarget()
+        {
+            Vector3 agentPosition = agentData.Transform.position;
+            Vector3 targetPosition = targetData.Transform.position;
+            
+            // y를 제외한 x와 z 좌표로 거리 계산
+            float distance = Mathf.Sqrt(Mathf.Pow(agentPosition.x - targetPosition.x, 2) + Mathf.Pow(agentPosition.z - targetPosition.z, 2));
+            return distance;
+        }
 
         private float CalculateNormalizedDistanceToTarget() =>
-            data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+            data.DistanceToTarget.Normalize(data.MaxDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateNormalizedAngleToTarget() =>
             data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
