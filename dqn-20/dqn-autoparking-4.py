@@ -29,10 +29,10 @@ mem_maxlen = 10000
 discount_factor = 0.85
 learning_rate = 0.0005
 
-run_step = 700*10000 if train_mode else 0 # 훈련 스텝
-test_step = 10000 # 테스트 스텝
-train_start_step = 700*10000/10 # 초기 탐험
-target_update_step = 1000
+run_step = 10000 if train_mode else 0 # 훈련 스텝
+test_step = 1000 # 테스트 스텝
+train_start_step = 10000/10 # 초기 탐험
+target_update_step = 100
 
 print_interval = 10
 save_interval = 100
@@ -46,7 +46,7 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 # 유니티 환경 경로
 game = "AutoParking"
 version = 29
-env_name = f'../Env/ap-{version}'
+env_name = f'../Env/auto-parking-environment'
 
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
@@ -163,7 +163,7 @@ class DQNAgent:
             brake_state = np.random.randint(0, 1, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
             action = np.concatenate([wheel_torque, steering_angle, brake_state], axis=1)
 
-            print(f"Random Action: {action}")
+            #print(f"Random Action: {action}")
             # print(f"Wheel Torque: {wheel_torque}, Steering Angle: {steering_angle}, Brake State: {brake_state}")
 
         else:
@@ -189,7 +189,7 @@ class DQNAgent:
                 # print(f"Clamped Brake State: {brake_state}, Q-values: {brake_state_q_values.cpu().numpy()}")
 
                 action = np.stack([wheel_torque, steering_angle, [0]], axis=1)
-                print(f"Action: {action}")
+                #print(f"Action: {action}")
 
         return action
 
@@ -247,15 +247,15 @@ class DQNAgent:
         steering_angle_one_hot = F.one_hot(actions[:, 1], num_classes=STEERING_ANGLE_MAX).to(device)
         brake_state_one_hot = F.one_hot(actions[:, 2], num_classes=BRAKE_STATE_MAX).to(device)
 
-        print(f"wheel_torque_one_hot: {wheel_torque_one_hot}")
-        print(f"steering_angle_one_hot: {steering_angle_one_hot}")
-        print(f"brake_state_one_hot: {brake_state_one_hot}")
+        #print(f"wheel_torque_one_hot: {wheel_torque_one_hot}")
+        #print(f"steering_angle_one_hot: {steering_angle_one_hot}")
+        #print(f"brake_state_one_hot: {brake_state_one_hot}")
 
         # one-hot 인코딩된 행동을 결합
         one_hot_action = torch.cat((wheel_torque_one_hot, steering_angle_one_hot, brake_state_one_hot), dim=1).float()
         q = (self.network(images, vectors, agent_pos) * one_hot_action).sum(dim=1, keepdim=True)
 
-        print(f"one_hot_action: {one_hot_action}")
+        #print(f"one_hot_action: {one_hot_action}")
 
         # Q(s', a') 계산
         with torch.no_grad():
@@ -319,15 +319,19 @@ if __name__ == '__main__':
     vector_obs = decision_steps.obs[VECTOR_OBS]
     image_obs = decision_steps.obs[IMAGE_OBS]
     agent_pos_obs = decision_steps.obs[AGENT_POS_OBS]
+    print(vector_obs.size)
+    print(image_obs.size)
 
     vector_size = vector_obs.shape[1]
     image_dim = (image_obs.shape[3], image_obs.shape[1], image_obs.shape[2])  # (channels, height, width)
     agents_pos_dim = agent_pos_obs.shape[1]
+    #print(vector_size)
 
     agent = DQNAgent(image_dim, vector_size, agents_pos_dim)
 
     losses, scores, episode, score = [], [], 0, 0
     for step in range(run_step + test_step):
+        
         if step == run_step:
             if train_mode:
                 agent.save_model()
@@ -345,7 +349,8 @@ if __name__ == '__main__':
             vector = terminal_steps.obs[VECTOR_OBS]
             image = terminal_steps.obs[IMAGE_OBS]
             agent_pos = terminal_steps.obs[AGENT_POS_OBS]
-
+        print(agent_pos)
+        print(vector)
         if len(decision_steps) > 0:  # 에이전트가 존재하는지 확인
             action = agent.get_action(image, vector, agent_pos, train_mode)
             action_tuple = ActionTuple()
