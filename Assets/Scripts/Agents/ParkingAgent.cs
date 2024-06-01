@@ -5,12 +5,13 @@ using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
 using UnityEngine;
+using UnityEngine.UI;
 using ParkingManager;
 using System.Collections.Generic;
 using AutonomousParking.ParkingLot.ObjectPlacers;
 
 namespace AutonomousParking.Agents
-{
+{   
     public class ParkingAgent : Agent
     {
         [field: SerializeField] public ParkingAgentData AgentData { get; private set; }
@@ -65,6 +66,9 @@ namespace AutonomousParking.Agents
             ActionsHandler.HandleInputActions(actions);
             MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
+
+            // Debug.Log($"Step: {StepCount}, Reward: {RewardCalculator.CalculateReward()}, Cumulative Reward: {GetCumulativeReward()}"); // 누적 보상 출력
+
             bool isNeededToEndEpisode = CollisionData.IsAnyCollision || TargetTrackingData.IsPerfectlyParked;
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
 

@@ -12,49 +12,54 @@ namespace AutonomousParking.Agents.Data
         public Transform Transform { get; private set; }
 
         private readonly Color parkingZoneColor = Color.red;
-        private readonly Color perfectParkingZoneColor = Color.white;
+        private readonly Color perfectParkingZoneColor = Color.green;
 
-        private void Awake() => Transform = transform;
+        private Mesh parkingZoneMesh;
+        private Mesh perfectParkingZoneMesh;
+
+        private void Awake()
+        {
+            Transform = transform;
+            parkingZoneMesh = CreateCircleMesh(ParkingRadius);
+            perfectParkingZoneMesh = CreateCircleMesh(PerfectParkingRadius);
+        }
 
         private void OnRenderObject()
         {
-            DrawParkingZone();
+            DrawCircleMesh(parkingZoneMesh, parkingZoneColor);
+            DrawCircleMesh(perfectParkingZoneMesh, perfectParkingZoneColor);
         }
 
-        private void DrawParkingZone()
+        private Mesh CreateCircleMesh(float radius)
         {
-            // Set the color for the parking zone
-            GL.PushMatrix();
-            GL.MultMatrix(transform.localToWorldMatrix);
+            int segments = 360;
+            Vector3[] vertices = new Vector3[segments + 1];
+            int[] indices = new int[segments * 2];
 
-            // Draw the parking zone
-            GL.Begin(GL.LINES);
-            GL.Color(parkingZoneColor);
-
-            for (int i = 0; i < 360; i++)
+            for (int i = 0; i <= segments; i++)
             {
                 float angle = i * Mathf.Deg2Rad;
-                float nextAngle = (i + 1) * Mathf.Deg2Rad;
-                GL.Vertex3(Mathf.Cos(angle) * ParkingRadius, 0, Mathf.Sin(angle) * ParkingRadius);
-                GL.Vertex3(Mathf.Cos(nextAngle) * ParkingRadius, 0, Mathf.Sin(nextAngle) * ParkingRadius);
+                vertices[i] = new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
             }
 
-            GL.End();
-
-            // Set the color for the perfect parking zone
-            GL.Begin(GL.LINES);
-            GL.Color(perfectParkingZoneColor);
-
-            for (int i = 0; i < 360; i++)
+            for (int i = 0; i < segments; i++)
             {
-                float angle = i * Mathf.Deg2Rad;
-                float nextAngle = (i + 1) * Mathf.Deg2Rad;
-                GL.Vertex3(Mathf.Cos(angle) * PerfectParkingRadius, 0, Mathf.Sin(angle) * PerfectParkingRadius);
-                GL.Vertex3(Mathf.Cos(nextAngle) * PerfectParkingRadius, 0, Mathf.Sin(nextAngle) * PerfectParkingRadius);
+                indices[i * 2] = i;
+                indices[i * 2 + 1] = i + 1;
             }
 
-            GL.End();
-            GL.PopMatrix();
+            Mesh mesh = new Mesh();
+            mesh.vertices = vertices;
+            mesh.SetIndices(indices, MeshTopology.Lines, 0);
+            return mesh;
+        }
+
+        private void DrawCircleMesh(Mesh mesh, Color color)
+        {
+            Material material = new Material(Shader.Find("Hidden/Internal-Colored"));
+            material.SetPass(0);
+            material.color = color;
+            Graphics.DrawMeshNow(mesh, Transform.localToWorldMatrix);
         }
     }
 }
