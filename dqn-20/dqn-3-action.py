@@ -5,12 +5,19 @@ import datetime
 import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
+from collections import deque
 from mlagents_envs.environment import UnityEnvironment, ActionTuple
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
+import matplotlib.pyplot as plt
 
 # DQN을 위한 파라미터 값 세팅
-action_size = 3 # agent가 취할 수 있는 행동의 개수
-action_dim = 24 # agent가 취할 수 있는 행동의 차원
+action_size = 3  # agent가 취할 수 있는 행동의 개수
+
+WHEEL_TORQUE_MAX = 11
+STEERING_ANGLE_MAX = 11
+BRAKE_STATE_MAX = 2
+
+action_dim = WHEEL_TORQUE_MAX + STEERING_ANGLE_MAX + BRAKE_STATE_MAX  # agent가 취할 수 있는 행동의 차원
 
 load_model = False
 train_mode = True
@@ -19,22 +26,19 @@ VECTOR_OBS = 0
 IMAGE_OBS = 1
 AGENT_POS_OBS = 2
 
-WHEEL_TORQUE_MAX = 11
-STEERING_ANGLE_MAX = 11
-BRAKE_STATE_MAX = 2
-
 batch_size = 64
 mem_maxlen = 10000
-discount_factor = 0.85
-learning_rate = 0.0005
+discount_factor = 0.9
+learning_rate = 0.00025
 
-run_step = 20000 if train_mode else 0 # 훈련 스텝
-test_step = 50000 # 테스트 스텝
-train_start_step = 10000 # 초기 탐험
+train_start_step = 1000  # 초기 탐험
+first_step = 20000 + train_start_step
+run_step = first_step if train_mode else 0  # 훈련 스텝
+test_step = 50000  # 테스트 스텝
 target_update_step = 100
 
 print_interval = 10
-save_interval = 100
+save_interval = 50
 
 epsilon_eval = 0.05
 epsilon_init = 1.0 if train_mode else epsilon_eval
@@ -44,23 +48,27 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 
 # 유니티 환경 경로
 game = "AutoParking"
-version = 25
+version = 81
 env_name = f'../Env/ap-{version}'
 
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DQN/{date_time}"
-load_path = f"./saved_models/{game}/DQN/20240522033014"
+load_path = f"./saved_models/{game}/DQN/20240530073302"
+# 20240530073302
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class DQN(torch.nn.Module):
-    def __init__(self, image_dim, vector_dim, agent_pos_dim, action_size, action_dim):
+    def __init__(self, image_dim, vector_dim, agent_pos_dim, action_dim):
         super(DQN, self).__init__()
         self.conv1 = torch.nn.Conv2d(in_channels=image_dim[0], out_channels=32, kernel_size=8, stride=4)
+        self.bn1 = torch.nn.BatchNorm2d(32)
         self.conv2 = torch.nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2)
+        self.bn2 = torch.nn.BatchNorm2d(64)
         self.conv3 = torch.nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, stride=1)
+        self.bn3 = torch.nn.BatchNorm2d(128)
 
         def conv2d_size_out(size, kernel_size, stride):
             return (size - (kernel_size - 1) - 1) // stride + 1
@@ -74,7 +82,7 @@ class DQN(torch.nn.Module):
 
         conv_output_size = convw * convh * 128
         linear_input_size = conv_output_size + vector_dim + agent_pos_dim
-        print(f"convw: {convw}, convh: {convh}, conv_output_size: {conv_output_size}, linear_input_size: {linear_input_size}")
+        # print(f"convw: {convw}, convh: {convh}, conv_output_size: {conv_output_size}, linear_input_size: {linear_input_size}")
 
         self.fc1 = torch.nn.Linear(linear_input_size, 512)
         self.fc2 = torch.nn.Linear(512, 512)
@@ -138,10 +146,10 @@ class PrioritizedReplayBuffer:
 # DQNAgent 클래스 -> DQN 알고리즘을 위한 다양한 함수 정의
 class DQNAgent:
     def __init__(self, image_dim, vector_dim, agent_pos_dim):
-        self.network = DQN(image_dim, vector_dim, agent_pos_dim, action_size, action_dim).to(device)
+        self.network = DQN(image_dim, vector_dim, agent_pos_dim, action_dim).to(device)
         self.target_network = copy.deepcopy(self.network)
         self.optimizer = torch.optim.Adam(self.network.parameters(), lr=learning_rate)
-        self.memory = PrioritizedReplayBuffer(mem_maxlen)
+        self.memory = deque(maxlen=mem_maxlen)
         self.epsilon = epsilon_init
         self.writer = SummaryWriter(save_path)
 
@@ -159,15 +167,15 @@ class DQNAgent:
         if epsilon > random.random():
             wheel_torque = np.random.randint(0, WHEEL_TORQUE_MAX, size=(vector.shape[0], 1))  # 휠 토크 (11개의 이산 값)
             steering_angle = np.random.randint(0, STEERING_ANGLE_MAX, size=(vector.shape[0], 1))  # 조향 각도 (11개의 이산 값)
-            brake_state = np.random.randint(0, 1, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
+            brake_state = np.random.randint(0, BRAKE_STATE_MAX, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
             action = np.concatenate([wheel_torque, steering_angle, brake_state], axis=1)
 
+            # print(f"Random Action: {action}")
             # print(f"Wheel Torque: {wheel_torque}, Steering Angle: {steering_angle}, Brake State: {brake_state}")
 
         else:
             with torch.no_grad():
-                image_tensor = torch.FloatTensor(image).to(device).permute(0, 3, 1,
-                                                                           2)  # (batch, height, width, channels) -> (batch, channels, height, width)
+                image_tensor = torch.FloatTensor(image).to(device).permute(0, 3, 1, 2)  # (batch, height, width, channels) -> (batch, channels, height, width)
                 vector_tensor = torch.FloatTensor(vector).to(device)
                 agent_pos_tensor = torch.FloatTensor(agent_pos).to(device)
                 q = self.network(image_tensor, vector_tensor, agent_pos_tensor).squeeze(1)
@@ -175,9 +183,9 @@ class DQNAgent:
                 # print(f"Q-values: {q.cpu().numpy()}")
 
                 # 액션 계산
-                wheel_torque_q_values = q[:, :11]
-                steering_angle_q_values = q[:, 11:22]
-                brake_state_q_values = q[:, 22:24]
+                wheel_torque_q_values = q[:, :WHEEL_TORQUE_MAX]
+                steering_angle_q_values = q[:, WHEEL_TORQUE_MAX:WHEEL_TORQUE_MAX+STEERING_ANGLE_MAX]
+                brake_state_q_values = q[:, WHEEL_TORQUE_MAX+STEERING_ANGLE_MAX:]
 
                 wheel_torque = torch.argmax(wheel_torque_q_values, dim=1).cpu().numpy()
                 steering_angle = torch.argmax(steering_angle_q_values, dim=1).cpu().numpy()
@@ -187,8 +195,8 @@ class DQNAgent:
                 # print(f"Clamped Steering Angle: {steering_angle}, Q-values: {steering_angle_q_values.cpu().numpy()}")
                 # print(f"Clamped Brake State: {brake_state}, Q-values: {brake_state_q_values.cpu().numpy()}")
 
-                action = np.stack([wheel_torque, steering_angle, 0], axis=1)
-                print(f"Action: {action}")
+                action = np.stack([wheel_torque, steering_angle, brake_state], axis=1)
+        # print(f"Action: {action}")
 
         return action
 
@@ -196,7 +204,7 @@ class DQNAgent:
         self.memory.append((image, vector, agent_pos, action, reward, next_image, next_vector, next_agent_pos, done))
 
     def train_model(self, beta=0.4):
-        samples, indices, weights = self.memory.sample(batch_size, beta)
+        samples = random.sample(self.memory, batch_size)
 
         # 데이터를 각각의 배열로 분할
         images = np.array([sample[0] for sample in samples])
@@ -208,6 +216,9 @@ class DQNAgent:
         next_vectors = np.array([sample[6] for sample in samples])
         next_agent_pos = np.array([sample[7] for sample in samples])
         dones = np.array([sample[8] for sample in samples])
+
+        images, vectors, agent_pos, actions, rewards, next_images, next_vectors, next_agent_pos, dones = map(
+            lambda x: torch.FloatTensor(x).to(device), [images, vectors, agent_pos, actions, rewards, next_images, next_vectors, next_agent_pos, dones])
 
         # Tensor로 변환
         if images.ndim == 5:
@@ -227,68 +238,51 @@ class DQNAgent:
 
         images = torch.FloatTensor(images).to(device).permute(0, 3, 1, 2)
         next_images = torch.FloatTensor(next_images).to(device).permute(0, 3, 1, 2)
-        vectors = torch.FloatTensor(vectors).to(device)
-        next_vectors = torch.FloatTensor(next_vectors).to(device)
-        agent_pos = torch.FloatTensor(agent_pos).to(device)
-        next_agent_pos = torch.FloatTensor(next_agent_pos).to(device)
-        actions = torch.FloatTensor(actions).to(device)  # actions를 FloatTensor로 변환
-        rewards = torch.FloatTensor(rewards).to(device)
-        dones = torch.FloatTensor(dones).to(device)
-        weights = torch.FloatTensor(weights).to(device).unsqueeze(1)
-
-        print("rw: ", rewards)
-        print("rw shape: ", rewards.shape)
-        print("dones: ", dones)
-        print("dones shape: ", dones.shape)
-        print("weights: ", weights)
-        print("weights shape: ", weights.shape)
 
         # Q(s, a) 계산
-        q_values = self.network(images, vectors, agent_pos)
         actions = actions.squeeze(1).long()
-
-        # print(f"Q-values: {q_values}")
 
         # 각 행동에 대해 one-hot 인코딩 수행
         wheel_torque_one_hot = F.one_hot(actions[:, 0], num_classes=WHEEL_TORQUE_MAX).to(device)
         steering_angle_one_hot = F.one_hot(actions[:, 1], num_classes=STEERING_ANGLE_MAX).to(device)
         brake_state_one_hot = F.one_hot(actions[:, 2], num_classes=BRAKE_STATE_MAX).to(device)
 
-        print(f"q_values: {q_values}")
-        print(f"q_values shape: {q_values.shape}")
+        # print(f"wheel_torque_one_hot: {wheel_torque_one_hot}")
+        # print(f"steering_angle_one_hot: {steering_angle_one_hot}")
 
         # one-hot 인코딩된 행동을 결합
         one_hot_action = torch.cat((wheel_torque_one_hot, steering_angle_one_hot, brake_state_one_hot), dim=1).float()
-        q_values = torch.sum(q_values * one_hot_action, dim=1).unsqueeze(1)
+        q = (self.network(images, vectors, agent_pos) * one_hot_action).sum(dim=1, keepdim=True)
 
-        print(f"wtoh: {wheel_torque_one_hot}")
-        print(f"saoh: {steering_angle_one_hot}")
-        print(f"bsoh: {brake_state_one_hot}")
-
-        print(f"Q-values: {q_values}")
-        print(f"Q-values shape: {q_values.shape}")
-        print(f"one_hot_action: {one_hot_action}")
-        print(f"one_hot_action shape: {one_hot_action.shape}")
+        # print(f"one_hot_action: {one_hot_action}")
 
         # Q(s', a') 계산
-        target_q_values = self.target_network(next_images, next_vectors, next_agent_pos).detach()
-        max_q_values = torch.max(target_q_values, dim=1, keepdim=True)[0]
-        target_values = rewards + (1 - dones) * discount_factor * max_q_values
+        with torch.no_grad():
+            target_q_values = self.target_network(next_images, next_vectors, next_agent_pos)
+            max_q_values = torch.max(target_q_values, dim=1, keepdim=True)[0]
+            target_q = rewards + (1 - dones) * discount_factor * max_q_values
 
-        # TD 오차 계산
-        td_errors = target_values - q_values
-        loss = (td_errors ** 2) * weights
-        loss = loss.mean()
+        # print(f"target_q_values: {target_q_values}")
+        # print(f"target_q_values shape: {target_q_values.shape}")
+        # print("done: ", dones)
+        # print(f"dones shape: {dones.shape}")
+        # print(f"max_q_values: {max_q_values}")
+        # print(f"max_q_values shape: {max_q_values.shape}")
+        # print(f"rewards: {rewards}")
+        # print(f"rewards shape: {rewards.shape}")
+        # print(f"target_q: {target_q}")
+        # print(f"target_q shape: {target_q.shape}")
+        # print(f"q values: {q}")
+        # print(f"q values shape: {q.shape}")
+
+        loss = F.smooth_l1_loss(q, target_q)
+
+        # print(f"loss: {loss}")
 
         # 모델 최적화
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-
-        # TD 오차로 우선순위 업데이트
-        td_errors_np = td_errors.data.cpu().numpy().squeeze()
-        td_errors_np = np.abs(td_errors_np) + 1e-6  # NaN 방지 및 소수 값 보정
-        self.memory.update_priorities(indices, td_errors_np.flatten())
 
         # 엡실론 감소
         self.epsilon = max(epsilon_min, self.epsilon - epsilon_delta)
@@ -318,7 +312,7 @@ if __name__ == '__main__':
 
     behavior_name = list(env.behavior_specs.keys())[0]
     spec = env.behavior_specs[behavior_name]
-    engine_configuration_channel.set_configuration_parameters(time_scale=12.0, target_frame_rate=60)
+    engine_configuration_channel.set_configuration_parameters(time_scale=5.0, target_frame_rate=60)
     decision_steps, terminal_steps = env.get_steps(behavior_name)
 
     vector_obs = decision_steps.obs[VECTOR_OBS]
@@ -331,6 +325,13 @@ if __name__ == '__main__':
 
     agent = DQNAgent(image_dim, vector_size, agents_pos_dim)
 
+    # # 이미지 데이터를 한 번만 시각화
+    # image = image_obs[0]
+    # plt.imshow(image)
+    # plt.title("Initial Image Observation")
+    # plt.axis("off")
+    # plt.show()
+
     losses, scores, episode, score = [], [], 0, 0
     for step in range(run_step + test_step):
         if step == run_step:
@@ -339,7 +340,6 @@ if __name__ == '__main__':
             print("TEST START")
             train_mode = False
             engine_configuration_channel.set_configuration_parameters(time_scale=1.0, target_frame_rate=60)
-            env.reset()
 
         decision_steps, terminal_steps = env.get_steps(behavior_name)
         if len(decision_steps) > 0:
@@ -359,7 +359,7 @@ if __name__ == '__main__':
             env.set_actions(behavior_name, action_tuple)
             env.step()
 
-            decision_steps, terminal_steps = env.get_steps(behavior_name) # 각 스텝에서의 보상을 가져옴
+            decision_steps, terminal_steps = env.get_steps(behavior_name)  # 각 스텝에서의 보상을 가져옴
         else:
             env.step()
 
@@ -368,11 +368,10 @@ if __name__ == '__main__':
         next_vector = terminal_steps.obs[VECTOR_OBS] if done else decision_steps.obs[VECTOR_OBS]
         next_image = terminal_steps.obs[IMAGE_OBS] if done else decision_steps.obs[IMAGE_OBS]
         next_agent_pos = terminal_steps.obs[AGENT_POS_OBS] if done else decision_steps.obs[AGENT_POS_OBS]
-
         score += reward[0]
 
         # Debug print statements
-        print(f'Step: {step}, Reward: {reward[0]}, Epsilon: {agent.epsilon:.4f}')
+        print(f'Step: {step}, Reward: {reward[0]}, Score: {score}, Epsilon: {agent.epsilon:.4f}')
 
         if train_mode:
             agent.append_sample(image, vector, agent_pos, action, reward, next_image, next_vector, next_agent_pos, [done])

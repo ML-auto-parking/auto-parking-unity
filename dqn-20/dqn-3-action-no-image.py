@@ -1,5 +1,4 @@
 # 이미지 데이터 제거
-
 import numpy as np
 import random
 import copy
@@ -7,12 +6,19 @@ import datetime
 import torch
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
+from collections import deque
 from mlagents_envs.environment import UnityEnvironment, ActionTuple
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
+import matplotlib.pyplot as plt
 
 # DQN을 위한 파라미터 값 세팅
 action_size = 3  # agent가 취할 수 있는 행동의 개수
-action_dim = 24  # agent가 취할 수 있는 행동의 차원
+
+WHEEL_TORQUE_MAX = 21
+STEERING_ANGLE_MAX = 21
+BRAKE_STATE_MAX = 2
+
+action_dim = WHEEL_TORQUE_MAX + STEERING_ANGLE_MAX + BRAKE_STATE_MAX  # agent가 취할 수 있는 행동의 차원
 
 load_model = True
 train_mode = False
@@ -21,19 +27,15 @@ VECTOR_OBS = 0
 IMAGE_OBS = 1
 AGENT_POS_OBS = 2
 
-WHEEL_TORQUE_MAX = 11
-STEERING_ANGLE_MAX = 11
-BRAKE_STATE_MAX = 2
-
-batch_size = 128
+batch_size = 64
 mem_maxlen = 10000
-discount_factor = 0.85
-learning_rate = 0.0001
+discount_factor = 0.9
+learning_rate = 0.00025
 
-first_step = 200000
+train_start_step = 5000  # 초기 탐험
+first_step = 700000 + train_start_step
 run_step = first_step if train_mode else 0  # 훈련 스텝
-test_step = 1000  # 테스트 스텝
-train_start_step = first_step//10 + 10000 # 초기 탐험
+test_step = 50000  # 테스트 스텝
 target_update_step = 100
 
 print_interval = 10
@@ -47,20 +49,20 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 
 # 유니티 환경 경로
 game = "AutoParking"
-version = 64
+version = 102
 env_name = f'../Env/ap-{version}'
 
 # 모델 저장 및 불러오기 경로
 date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 save_path = f"./saved_models/{game}/DQN/{date_time}"
-load_file = "20240527061046"
-load_path = f"./saved_models/{game}/DQN/{load_file}"
+load_path = f"./saved_models/{game}/DQN/20240603050355"
+# 20240530073302
 
 # 연산 장치
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class DQN(torch.nn.Module):
-    def __init__(self, vector_dim, agent_pos_dim, action_size, action_dim):
+    def __init__(self, vector_dim, agent_pos_dim, action_dim):
         super(DQN, self).__init__()
         linear_input_size = vector_dim + agent_pos_dim
 
@@ -122,7 +124,7 @@ class PrioritizedReplayBuffer:
 # DQNAgent 클래스 -> DQN 알고리즘을 위한 다양한 함수 정의
 class DQNAgent:
     def __init__(self, vector_dim, agent_pos_dim):
-        self.network = DQN(vector_dim, agent_pos_dim, action_size, action_dim).to(device)
+        self.network = DQN(vector_dim, agent_pos_dim, action_dim).to(device)
         self.target_network = copy.deepcopy(self.network)
         self.optimizer = torch.optim.Adam(self.network.parameters(), lr=learning_rate)
         self.memory = PrioritizedReplayBuffer(mem_maxlen)
@@ -158,9 +160,9 @@ class DQNAgent:
                 # print(f"Q-values: {q.cpu().numpy()}")
 
                 # 액션 계산
-                wheel_torque_q_values = q[:, :11]
-                steering_angle_q_values = q[:, 11:22]
-                brake_state_q_values = q[:, 22:24]
+                wheel_torque_q_values = q[:, :WHEEL_TORQUE_MAX]
+                steering_angle_q_values = q[:, WHEEL_TORQUE_MAX:WHEEL_TORQUE_MAX+STEERING_ANGLE_MAX]
+                brake_state_q_values = q[:, WHEEL_TORQUE_MAX+STEERING_ANGLE_MAX:]
 
                 wheel_torque = torch.argmax(wheel_torque_q_values, dim=1).cpu().numpy()
                 steering_angle = torch.argmax(steering_angle_q_values, dim=1).cpu().numpy()
@@ -171,7 +173,7 @@ class DQNAgent:
                 # print(f"Clamped Brake State: {brake_state}, Q-values: {brake_state_q_values.cpu().numpy()}")
 
                 action = np.stack([wheel_torque, steering_angle, brake_state], axis=1)
-                # print(f"Action: {action}")
+        print(f"Action: {action}")
 
         return action
 
@@ -310,7 +312,7 @@ if __name__ == '__main__':
                 agent.save_model()
             print("TEST START")
             train_mode = False
-            engine_configuration_channel.set_configuration_parameters(time_scale=3.0, target_frame_rate=60)
+            engine_configuration_channel.set_configuration_parameters(time_scale=0.1, target_frame_rate=60)
 
         decision_steps, terminal_steps = env.get_steps(behavior_name)
         if len(decision_steps) > 0:
