@@ -35,8 +35,8 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
                 List<Transform> availableHorizontalParkingSpots = parkingLotData.CurrentlyAvailableHorizontalParkingSpots;
                 
                 // 차량이 배치될 주차 공간 수를 계산합니다.
-                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count - 1;
-                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count;
+                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count;
+                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count - 1;
                 
                 List<Transform> totalParkingSpotsToOccupy = availableVerticalParkingSpots.ExtractRandomItems(occupiedVerticalParkingSpotsCount);
                 totalParkingSpotsToOccupy.AddRange(availableHorizontalParkingSpots.ExtractRandomItems(occupiedHorizontalParkingSpotsCount));

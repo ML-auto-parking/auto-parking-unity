@@ -53,15 +53,15 @@ namespace AutonomousParking.Agents.Components
             }
 
             // Debug.Log("Angle to target: " + data.MaxDistanceToTargetToGetRewardForDecreasingAngle);
-            if (data.DistanceToTarget < data.MaxDistanceToTargetToGetRewardForDecreasingAngle && (agentData.StepCount - this.PastStepCountForAngle) > 100 && (data.AngleToTarget < data.MaxAngleToTarget))
-            {
-                this.PastStepCountForAngle = agentData.StepCount;
-                if (data.DistanceToTarget >= targetData.ParkingRadius){
-                    data.MaxDistanceToTargetToGetRewardForDecreasingAngle = data.DistanceToTarget;
-                } else {
-                    data.MaxDistanceToTargetToGetRewardForDecreasingAngle = targetData.ParkingRadius;
-                }
-            }
+            // if (data.DistanceToTarget < data.MaxDistanceToTargetToGetRewardForDecreasingAngle && (agentData.StepCount - this.PastStepCountForAngle) > 100 && (data.AngleToTarget < data.MaxAngleToTarget))
+            // {
+            //     this.PastStepCountForAngle = agentData.StepCount;
+            //     if (data.DistanceToTarget >= targetData.ParkingRadius){
+            //         data.MaxDistanceToTargetToGetRewardForDecreasingAngle = data.DistanceToTarget;
+            //     } else {
+            //         data.MaxDistanceToTargetToGetRewardForDecreasingAngle = targetData.ParkingRadius;
+            //     }
+            // }
         }
 
         private float CalculateDistanceToTarget()

@@ -49,13 +49,13 @@ for _ in range(10):
 
     # 유니티 환경 경로
     game = "AutoParking"
-    version = 132
+    version = 128
     env_name = f'../Env/ap-{version}'
 
     # 모델 저장 및 불러오기 경로
     date_time = datetime.datetime.now().strftime("%m-%d %H:%M")
     save_path = f"./saved_models/{game}/DQN/a2-s2/ver-{version}/{date_time}"
-    load_path = f"./saved_models/{game}/DQN/a2-s2/ver-{version}/06-05 10:14"
+    load_path = f"./saved_models/{game}/DQN/a2-s2/ver-{version}/06-05 07:01"
     # 20240602012700
 
     # 연산 장치
@@ -292,7 +292,7 @@ for _ in range(10):
     # Main 함수
     if __name__ == '__main__':
         engine_configuration_channel = EngineConfigurationChannel()
-        env = UnityEnvironment(file_name=env_name, side_channels=[engine_configuration_channel], worker_id=11)
+        env = UnityEnvironment(file_name=env_name, side_channels=[engine_configuration_channel], worker_id=15)
         env.reset()
 
         behavior_name = list(env.behavior_specs.keys())[0]

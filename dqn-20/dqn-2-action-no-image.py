@@ -49,7 +49,7 @@ for _ in range(10):
 
     # 유니티 환경 경로
     game = "AutoParking"
-    version = 131
+    version = 132
     env_name = f'../Env/ap-{version}'
 
     # 모델 저장 및 불러오기 경로
