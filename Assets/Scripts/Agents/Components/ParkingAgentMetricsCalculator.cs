@@ -10,6 +10,9 @@ namespace AutonomousParking.Agents.Components
         private readonly ParkingAgentTargetTrackingData data;
         private readonly ParkingAgentTargetData targetData;
 
+        private int PastStepCountForDistance;
+        private int PastStepCountForAngle;
+
         public ParkingAgentMetricsCalculator(ParkingAgentData agentData, ParkingAgentTargetData targetData,
             ParkingAgentTargetTrackingData data)
         {
@@ -21,19 +24,44 @@ namespace AutonomousParking.Agents.Components
         public void CalculateInitialTargetTrackingMetrics()
         {
             data.MaxDistanceToTarget = CalculateDistanceToTarget();
-            data.MaxAngleToTarget = CalculateAngleToTarget();
+            data.MaxAngleToTarget = 65f;
+            this.PastStepCountForDistance = 0;
+            this.PastStepCountForAngle = 0;
         }
 
         public void CalculateTargetTrackingMetrics()
         {
             data.DistanceToTarget = CalculateDistanceToTarget();
             data.NormalizedDistanceToTarget = CalculateNormalizedDistanceToTarget();
+            
             data.AngleToTarget = CalculateAngleToTarget();
             data.NormalizedAngleToTarget = CalculateNormalizedAngleToTarget();
 
             data.IsParked = CalculateWhetherAgentIsParked();
             data.IsPerfectlyParked = CalculateWhetherAgentIsPerfectlyParked();
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
+
+            // Debug.Log("Distance to target: " + data.MaxDistanceToTarget);
+            if (data.DistanceToTarget < data.MaxDistanceToTarget && (agentData.StepCount - this.PastStepCountForDistance) > 50 )
+            {
+                this.PastStepCountForDistance = agentData.StepCount;
+                if (data.DistanceToTarget >= targetData.ParkingRadius){
+                    data.MaxDistanceToTarget = data.DistanceToTarget;
+                } else {
+                    data.MaxDistanceToTarget = targetData.ParkingRadius;
+                }
+            }
+
+            // Debug.Log("Angle to target: " + data.MaxDistanceToTargetToGetRewardForDecreasingAngle);
+            if (data.DistanceToTarget < data.MaxDistanceToTargetToGetRewardForDecreasingAngle && (agentData.StepCount - this.PastStepCountForAngle) > 100 && (data.AngleToTarget < data.MaxAngleToTarget))
+            {
+                this.PastStepCountForAngle = agentData.StepCount;
+                if (data.DistanceToTarget >= targetData.ParkingRadius){
+                    data.MaxDistanceToTargetToGetRewardForDecreasingAngle = data.DistanceToTarget;
+                } else {
+                    data.MaxDistanceToTargetToGetRewardForDecreasingAngle = targetData.ParkingRadius;
+                }
+            }
         }
 
         private float CalculateDistanceToTarget()
@@ -47,14 +75,11 @@ namespace AutonomousParking.Agents.Components
         }
 
         private float CalculateNormalizedDistanceToTarget() =>
-<<<<<<< HEAD
             data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
-=======
-             data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
->>>>>>> 0dc550c02c5e8e131ac05573bfebbd1c2604f32d
 
-        private float CalculateNormalizedAngleToTarget() =>
-            data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
+        private float CalculateNormalizedAngleToTarget() {
+            return data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
+        }
 
         private float AdjustAngleForMultipleOrientations(float angle)
         {

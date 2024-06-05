@@ -13,8 +13,6 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         [SerializeField] private CarSpawner carSpawner;
         // ParkingLotData 객체에 대한 참조를 직렬화하여 인스펙터에서 설정할 수 있도록 합니다.
         [SerializeField] private ParkingLotData parkingLotData;
-        // 항상 비워둘 주차 공간의 인덱스
-        [SerializeField] private int alwaysEmptySpotIndex;
 
         // Place 메소드는 주차장에 차량을 배치하는 로직을 수행합니다.
         public void Place()
@@ -51,9 +49,9 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         // Remove 메소드는 모든 차량을 주차장에서 제거하고 주차장 데이터를 리셋합니다.
         public void Remove()
         {
-            // // CarSpawner를 통해 모든 차량을 제거합니다.
+            // CarSpawner를 통해 모든 차량을 제거합니다.
             // carSpawner.DeSpawnAll();
-            // // 주차장 데이터를 초기 상태로 복원합니다.
+            // 주차장 데이터를 초기 상태로 복원합니다.
             // parkingLotData.Reset();
         }
     }

@@ -22,36 +22,38 @@ namespace AutonomousParking.Agents.Components
             this.targetTrackingData = targetTrackingData;
         }
 
-        public float CalculateReward() // 보상 계산 함수
-        {
+        public float CalculateReward() {// 보상 계산 함수
 
             // 효율성 보상 계산
-            float reward = -1; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
+            float reward = -0.3f; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
             // 정확도 보상 계산
             reward += CalculateRewardForDecreasingDistanceToTarget(); // 타겟까지의 거리 감소에 대한 보상 계산
-<<<<<<< HEAD
-            if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget){ // 타겟까지의 각도 감소에 대한 보상 계산
-=======
             //Debug.Log(CalculateRewardForDecreasingDistanceToTarget());
 
-            if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) // 타겟까지의 각도 감소에 대한 보상 계산
->>>>>>> 0dc550c02c5e8e131ac05573bfebbd1c2604f32d
+            if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) {// 타겟까지의 각도 감소에 대한 보상 계산
                 reward += CalculateRewardForDecreasingAngleToTarget();
-                Debug.Log("reward: " + CalculateRewardForDecreasingAngleToTarget());
+                Debug.Log("angle reward: " + CalculateRewardForDecreasingAngleToTarget());
             }
 
             if (agentCollisionData.IsAnyCollision) // 충돌에 대한 보상 계산
-            { reward += rewardData.CollisionRewards[agentCollisionData.CollisionTag];
-                //Debug.Log(rewardData.CollisionRewards[agentCollisionData.CollisionTag]);
+            { 
+                reward += rewardData.CollisionRewards[agentCollisionData.CollisionTag];
             }
                 
 
             if (targetTrackingData.IsParked) // 주차 완료에 대한 보상 계산
             {
                 reward += CalculateRewardForParking(); // 주차에 대한 보상 계산
+                // Debug.Log("reward: " + CalculateRewardForParking());
                 if (targetTrackingData.IsPerfectlyParked) // 완벽한 주차에 대한 보상 계산
                     reward += CalculateRewardForPerfectParking();
             }
+
+            if (HasReachedMaxStep()) {
+                Debug.Log("Max Step reached: " + agentData.StepCount);
+                reward = -100f;
+            }
+
             return reward;
         }
 
@@ -60,8 +62,9 @@ namespace AutonomousParking.Agents.Components
             targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
 
         // 타겟까지의 각도 감소에 따른 보상을 계산합니다.
-        private float CalculateRewardForDecreasingAngleToTarget() =>
-            targetTrackingData.NormalizedAngleToTarget * rewardData.MaxRewardForDecreasingAngleToTargetPerStep;
+        private float CalculateRewardForDecreasingAngleToTarget() {
+            return targetTrackingData.NormalizedAngleToTarget * rewardData.MaxRewardForDecreasingAngleToTargetPerStep;
+        }
 
         // 주차에 성공했을 때의 보상을 계산합니다. 보상은 주차 시작 가능 단계 범위를 기준으로 계산됩니다.
         private float CalculateRewardForParking() => agentData.StepCount
@@ -72,5 +75,8 @@ namespace AutonomousParking.Agents.Components
         private float CalculateRewardForPerfectParking() => agentData.StepCount
             .ChangeBounds(agentData.MaxStepToStartParking, agentData.MinStepToStartParking,
                 rewardData.MinRewardForPerfectParking, rewardData.MaxRewardForPerfectParking);
+
+        // max step에 도달했는지 여부
+        public bool HasReachedMaxStep() => agentData.StepCount >= agentData.MaxStepToStartParking - 4;
     }
 }

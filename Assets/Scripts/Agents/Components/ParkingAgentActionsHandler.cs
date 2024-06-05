@@ -12,8 +12,8 @@ namespace AutonomousParking.Agents.Components
         private readonly CarUserInputInterpreter interpreter;
 
         // 이산 값의 범위 설정 (예: 10개의 이산 값으로 정밀도 증가)
-        private const int NumDiscreteWheelTorqueValues = 11;
-        private const int NumDiscreteSteeringAngleValues = 11;
+        private const int NumDiscreteWheelTorqueValues = 21;
+        private const int NumDiscreteSteeringAngleValues = 21;
 
         public ParkingAgentActionsHandler(CarData carData)
         {
@@ -51,6 +51,7 @@ namespace AutonomousParking.Agents.Components
             discreteActionsOut[0] = ConvertContinuousToDiscrete(CarUserInputData.WheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues);
             discreteActionsOut[1] = ConvertContinuousToDiscrete(CarUserInputData.SteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues);
             discreteActionsOut[2] = Convert.ToInt32(CarUserInputData.IsBreaking);
+            // Debug.Log("Break: " + discreteActionsOut[2]);
         }
 
         // 연속적인 값을 이산적인 값으로 변환하는 메서드

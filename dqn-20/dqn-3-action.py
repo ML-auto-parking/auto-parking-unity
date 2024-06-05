@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 # DQN을 위한 파라미터 값 세팅
 action_size = 3  # agent가 취할 수 있는 행동의 개수
 
-WHEEL_TORQUE_MAX = 11
-STEERING_ANGLE_MAX = 11
+WHEEL_TORQUE_MAX = 21
+STEERING_ANGLE_MAX = 21
 BRAKE_STATE_MAX = 2
 
 action_dim = WHEEL_TORQUE_MAX + STEERING_ANGLE_MAX + BRAKE_STATE_MAX  # agent가 취할 수 있는 행동의 차원
@@ -27,14 +27,14 @@ IMAGE_OBS = 1
 AGENT_POS_OBS = 2
 
 batch_size = 64
-mem_maxlen = 10000
+mem_maxlen = 5000
 discount_factor = 0.9
 learning_rate = 0.00025
 
-train_start_step = 1000  # 초기 탐험
-first_step = 20000 + train_start_step
+train_start_step = 5000  # 초기 탐험
+first_step = 50000 + train_start_step
 run_step = first_step if train_mode else 0  # 훈련 스텝
-test_step = 50000  # 테스트 스텝
+test_step = 1  # 테스트 스텝
 target_update_step = 100
 
 print_interval = 10
@@ -48,13 +48,13 @@ epsilon_delta = (epsilon_init - epsilon_min) / explore_step if train_mode else 0
 
 # 유니티 환경 경로
 game = "AutoParking"
-version = 81
+version = 115
 env_name = f'../Env/ap-{version}'
 
 # 모델 저장 및 불러오기 경로
-date_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-save_path = f"./saved_models/{game}/DQN/{date_time}"
-load_path = f"./saved_models/{game}/DQN/20240530073302"
+date_time = datetime.datetime.now().strftime("%m%d%H%M")
+save_path = f"./saved_models/{game}/DQN/a3-s3/ver-{version}-{date_time}"
+load_path = f"./saved_models/{game}/DQN/a3-s3/20240530073302"
 # 20240530073302
 
 # 연산 장치
@@ -167,7 +167,9 @@ class DQNAgent:
         if epsilon > random.random():
             wheel_torque = np.random.randint(0, WHEEL_TORQUE_MAX, size=(vector.shape[0], 1))  # 휠 토크 (11개의 이산 값)
             steering_angle = np.random.randint(0, STEERING_ANGLE_MAX, size=(vector.shape[0], 1))  # 조향 각도 (11개의 이산 값)
-            brake_state = np.random.randint(0, BRAKE_STATE_MAX, size=(vector.shape[0], 1))  # 브레이크 상태 (2개의 이산 값)
+            # 수정된 brake_state 생성 부분
+            brake_probability = [0.8, 0.2]  # 예시 (브레이크 밟지 않음 : 70%, 밟음 : 30%)
+            brake_state = np.random.choice([0, 1], size=(vector.shape[0], 1), p=brake_probability)
             action = np.concatenate([wheel_torque, steering_angle, brake_state], axis=1)
 
             # print(f"Random Action: {action}")
@@ -307,7 +309,7 @@ class DQNAgent:
 # Main 함수
 if __name__ == '__main__':
     engine_configuration_channel = EngineConfigurationChannel()
-    env = UnityEnvironment(file_name=env_name, side_channels=[engine_configuration_channel])
+    env = UnityEnvironment(file_name=env_name, side_channels=[engine_configuration_channel], worker_id=3)
     env.reset()
 
     behavior_name = list(env.behavior_specs.keys())[0]

@@ -71,7 +71,7 @@ namespace AutonomousParking.Agents
             ObservationsCollector.CollectAgentVelocityObservations(sensor);
 
             ObservationsCollector.CollectTargetTransformObservations(sensor);
-            CheckRayCast();
+            // CheckRayCast();
         }
 
         public override void OnActionReceived(ActionBuffers actions)
@@ -79,14 +79,10 @@ namespace AutonomousParking.Agents
             ActionsHandler.HandleInputActions(actions);
             MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
-<<<<<<< HEAD
 
             // Debug.Log($"Step: {StepCount}, Reward: {RewardCalculator.CalculateReward()}, Cumulative Reward: {GetCumulativeReward()}"); // 누적 보상 출력
-
-=======
             rewardText.text = "Reward: " + GetCumulativeReward().ToString("F2");
             stepText.text = "Step: " + StepCount.ToString("F2");
->>>>>>> 0dc550c02c5e8e131ac05573bfebbd1c2604f32d
             bool isNeededToEndEpisode = CollisionData.IsAnyCollision || TargetTrackingData.IsPerfectlyParked;
             bool isLastStep = AgentData.HasReachedMaxStep || isNeededToEndEpisode;
 

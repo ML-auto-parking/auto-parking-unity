@@ -12,6 +12,7 @@ from mlagents_envs.side_channel.engine_configuration_channel import EngineConfig
 # DQN을 위한 파라미터 값 세팅
 action_size = 3  # 연속적인 행동 두 개 (휠 토크, 조향 각도) + 이산적인 행동 하나 (브레이크 상태)
 
+
 load_model = False
 train_mode = True
 
