@@ -12,8 +12,8 @@ namespace AutonomousParking.Agents.Components
         private readonly CarUserInputInterpreter interpreter;
 
         // 이산 값의 범위 설정 (예: 10개의 이산 값으로 정밀도 증가)
-        private const int NumDiscreteWheelTorqueValues = 21;
-        private const int NumDiscreteSteeringAngleValues = 21;
+        private const int NumDiscreteWheelTorqueValues = 5;
+        private const int NumDiscreteSteeringAngleValues = 5;
 
         public ParkingAgentActionsHandler(CarData carData)
         {
