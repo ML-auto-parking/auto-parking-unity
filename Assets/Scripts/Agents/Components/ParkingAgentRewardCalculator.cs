@@ -49,10 +49,10 @@ namespace AutonomousParking.Agents.Components
                     reward += CalculateRewardForPerfectParking();
             }
 
-            if (HasReachedMaxStep()) {
-                Debug.Log("Max Step reached: " + agentData.StepCount);
-                reward = -100f;
-            }
+            // if (HasReachedMaxStep()) {
+            //     Debug.Log("Max Step reached: " + agentData.StepCount);
+            //     reward = -100f;
+            // }
 
             return reward;
         }
