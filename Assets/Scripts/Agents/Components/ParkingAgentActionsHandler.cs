@@ -24,7 +24,7 @@ namespace AutonomousParking.Agents.Components
         public void HandleInputActions(ActionBuffers actions)
         {
             // 이산 액션 배열 크기 확인
-            if (actions.DiscreteActions.Length < 3)
+            if (actions.DiscreteActions.Length < 2)
             {
                 Debug.LogError("Expected at least 3 discrete actions.");
                 return;
@@ -33,16 +33,14 @@ namespace AutonomousParking.Agents.Components
             // 이산 액션 값을 연속 값으로 변환하여 사용
             var discreteWheelTorque = actions.DiscreteActions[0];
             var discreteSteeringAngle = actions.DiscreteActions[1];
-            var brakeState = actions.DiscreteActions[2];
 
             carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(ConvertDiscreteToContinuous(discreteWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
             carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(ConvertDiscreteToContinuous(discreteSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
-            carData.IsBreaking = interpreter.InterpretAsBreakingState(brakeState);
         }
 
         public void HandleHeuristicInputDiscreteActions(in ActionSegment<int> discreteActionsOut)
         {
-            if (discreteActionsOut.Length < 3)
+            if (discreteActionsOut.Length < 2)
             {
                 Debug.LogError("Expected at least 3 discrete actions out.");
                 return;
@@ -51,7 +49,6 @@ namespace AutonomousParking.Agents.Components
 
             discreteActionsOut[0] = ConvertContinuousToDiscrete(CarUserInputData.WheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues);
             discreteActionsOut[1] = ConvertContinuousToDiscrete(CarUserInputData.SteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues);
-            discreteActionsOut[2] = Convert.ToInt32(CarUserInputData.IsBreaking);
         }
 
         // 연속적인 값을 이산적인 값으로 변환하는 메서드
