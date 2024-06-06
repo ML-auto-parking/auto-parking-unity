@@ -13,7 +13,7 @@ namespace AutonomousParking.Car.UserInput
         {
             carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(CarUserInputData.WheelTorque);
             carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(CarUserInputData.SteeringAngle);
-            carData.IsBreaking = interpreter.InterpretAsBreakingState(CarUserInputData.IsBreaking);
+            //carData.IsBreaking = interpreter.InterpretAsBreakingState(CarUserInputData.IsBreaking);
         }
     }
 }

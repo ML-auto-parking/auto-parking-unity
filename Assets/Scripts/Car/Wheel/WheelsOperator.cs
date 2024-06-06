@@ -16,8 +16,8 @@ namespace AutonomousParking.Car.Wheel
 
         public void ApplyBreaking(float colliderBrakeTorque)
         {
-            foreach (WheelData wheel in wheelsData.BrakingWheels)
-                wheel.Collider.brakeTorque = colliderBrakeTorque;
+            //foreach (WheelData wheel in wheelsData.BrakingWheels)
+                //wheel.Collider.brakeTorque = colliderBrakeTorque;
         }
 
         public void ApplySteering(float steeringAngle)

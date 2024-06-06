@@ -10,7 +10,7 @@ namespace AutonomousParking.Car.Wheel
         public void Reset()
         {
             Collider.motorTorque = default;
-            Collider.brakeTorque = default;
+            //Collider.brakeTorque = default;
             Collider.steerAngle = default;
             Collider.rotationSpeed = default;
         }

@@ -12,8 +12,8 @@ namespace AutonomousParking.Car.UserInput
 
         public float InterpretAsSteeringAngle(float input) => input * carData.MaxSteeringAngle;
 
-        public bool InterpretAsBreakingState(int input) => Convert.ToBoolean(input);
+        //public bool InterpretAsBreakingState(int input) => Convert.ToBoolean(input);
 
-        public bool InterpretAsBreakingState(bool input) => input;
+        //public bool InterpretAsBreakingState(bool input) => input;
     }
 }

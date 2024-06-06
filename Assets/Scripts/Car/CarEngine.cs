@@ -18,7 +18,7 @@ namespace AutonomousParking.Car
         private void FixedUpdate()
         {
             wheelsOperator.ApplyWheelTorque(carData.CurrentWheelTorque / Time.fixedDeltaTime);
-            wheelsOperator.ApplyBreaking(carData.IsBreaking ? carData.MaxBrakeTorque : default);
+            //wheelsOperator.ApplyBreaking(carData.IsBreaking ? carData.MaxBrakeTorque : default);
             wheelsOperator.ApplySteering(carData.CurrentSteeringAngle);
             wheelsOperator.SynchronizeWheelsVisualization();
         }

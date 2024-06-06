@@ -22,5 +22,7 @@ namespace AutonomousParking.Agents.Data
         public float NormalizedAngleToTarget { get; set; }
         public float MinAngleToTarget { get; set; }
         public float MaxAngleToTarget { get; set; }
+
+        //public float CurrentMinDistanceToTarget { get; set; }
     }
 }

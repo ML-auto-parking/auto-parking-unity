@@ -21,12 +21,26 @@ namespace AutonomousParking.Agents.Components
         public void CalculateInitialTargetTrackingMetrics()
         {
             data.MaxDistanceToTarget = CalculateDistanceToTarget();
-            data.MaxAngleToTarget = CalculateAngleToTarget();
+            data.MaxAngleToTarget = 90f;
+            //data.CurrentMinDistanceToTarget= CalculateDistanceToTarget();
         }
 
         public void CalculateTargetTrackingMetrics()
         {
             data.DistanceToTarget = CalculateDistanceToTarget();
+            /*
+            // 현재 최소 위치보다 거리가 줄었을 경우
+            if (data.DistanceToTarget<data.CurrentMinDistanceToTarget)
+            {
+                data.CurrentMinDistanceToTarget = data.DistanceToTarget;
+                data.NormalizedDistanceToTarget = CalculateNormalizedDistanceToTarget();
+                Debug.Log(agentData.StepCount + "성공 :" + data.NormalizedDistanceToTarget);
+            }
+            else
+            {
+                data.NormalizedDistanceToTarget = CalculateNormalizedNegativeDistanceToTarget();
+                Debug.Log(agentData.StepCount + "실패 :" + data.NormalizedDistanceToTarget);
+            }*/
             data.NormalizedDistanceToTarget = CalculateNormalizedDistanceToTarget();
             data.AngleToTarget = CalculateAngleToTarget();
             data.NormalizedAngleToTarget = CalculateNormalizedAngleToTarget();
@@ -47,11 +61,12 @@ namespace AutonomousParking.Agents.Components
         }
 
         private float CalculateNormalizedDistanceToTarget() =>
-<<<<<<< HEAD
             data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
-=======
-             data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
->>>>>>> 0dc550c02c5e8e131ac05573bfebbd1c2604f32d
+        /*
+        private float CalculateNormalizedNegativeDistanceToTarget() =>
+            data.DistanceToTarget.NormalizeWithNegative(data.CurrentMinDistanceToTarget, data.MinDistanceToTarget);
+        */
+
 
         private float CalculateNormalizedAngleToTarget() =>
             data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
