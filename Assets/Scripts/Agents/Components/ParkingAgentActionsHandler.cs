@@ -35,8 +35,8 @@ namespace AutonomousParking.Agents.Components
             var discreteSteeringAngle = actions.DiscreteActions[1];
             var brakeState = actions.DiscreteActions[2];
 
-            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(DiscreteToContinuous(discreteWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
-            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(DiscreteToContinuous(discreteSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
+            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(ConvertDiscreteToContinuous(discreteWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
+            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(ConvertDiscreteToContinuous(discreteSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
             carData.IsBreaking = interpreter.InterpretAsBreakingState(brakeState);
         }
 
@@ -48,10 +48,10 @@ namespace AutonomousParking.Agents.Components
                 return;
             }
 
+
             discreteActionsOut[0] = ConvertContinuousToDiscrete(CarUserInputData.WheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues);
             discreteActionsOut[1] = ConvertContinuousToDiscrete(CarUserInputData.SteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues);
             discreteActionsOut[2] = Convert.ToInt32(CarUserInputData.IsBreaking);
-            // Debug.Log("Break: " + discreteActionsOut[2]);
         }
 
         // 연속적인 값을 이산적인 값으로 변환하는 메서드
@@ -59,17 +59,35 @@ namespace AutonomousParking.Agents.Components
         {
             if (numDiscreteValues <= 1) return 0;
 
-            float normalizedValue = Mathf.Clamp((value - minValue) / (maxValue - minValue), 0f, 1f);
-            return Mathf.FloorToInt(normalizedValue * (numDiscreteValues - 1));
+            // Calculate the step size based on the given minValue, maxValue, and numDiscreteValues
+            float low = minValue + (maxValue - minValue) / (2 * (numDiscreteValues - 1));
+            float stepSize = (maxValue - minValue) / (numDiscreteValues - 1);
+            // Iterate through the number of discrete values to find the correct range
+            for (int i = 0; i < numDiscreteValues; i++)
+            {
+                float threshold = low + stepSize * i;
+                if (value <= threshold)
+                {
+                    return i;
+                }
+            }
+
+            // If value exceeds the maxValue, return the highest discrete value
+            return numDiscreteValues - 1;
         }
 
         // 이산적인 값을 연속적인 값으로 변환하는 메서드
-        private float DiscreteToContinuous(int discreteValue, float minValue, float maxValue, int numDiscreteValues)
+        private float ConvertDiscreteToContinuous(int discreteValue, float minValue, float maxValue, int numDiscreteValues)
         {
             if (numDiscreteValues <= 1) return minValue;
 
+            // Calculate the step size based on the given minValue, maxValue, and numDiscreteValues
             float stepSize = (maxValue - minValue) / (numDiscreteValues - 1);
-            return minValue + (stepSize * discreteValue);
+
+            // Calculate the continuous value for the given discrete value
+            float continuousValue = minValue + stepSize * discreteValue;
+
+            return continuousValue;
         }
     }
 }
