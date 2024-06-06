@@ -42,13 +42,13 @@ namespace AutonomousParking.Agents.Components
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
 
             // Debug.Log("Distance to target: " + data.MaxDistanceToTarget);
-            if (data.DistanceToTarget < data.MaxDistanceToTarget && (agentData.StepCount - this.PastStepCountForDistance) > 50 )
+            if (data.DistanceToTarget < data.MaxDistanceToTarget && (agentData.StepCount - this.PastStepCountForDistance) > 100 )
             {
                 this.PastStepCountForDistance = agentData.StepCount;
-                if (data.DistanceToTarget >= targetData.ParkingRadius){
+                if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
                     data.MaxDistanceToTarget = data.DistanceToTarget;
                 } else {
-                    data.MaxDistanceToTarget = targetData.ParkingRadius;
+                    data.MaxDistanceToTarget = data.MaxDistanceToTargetToGetRewardForDecreasingAngle;
                 }
             }
 
