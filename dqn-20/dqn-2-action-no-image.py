@@ -15,8 +15,8 @@ for _ in range(10):
     # DQN을 위한 파라미터 값 세팅
     action_size = 3  # agent가 취할 수 있는 행동의 개수
 
-    WHEEL_TORQUE_MAX = 21
-    STEERING_ANGLE_MAX = 21
+    WHEEL_TORQUE_MAX = 5
+    STEERING_ANGLE_MAX = 5
 
     action_dim = WHEEL_TORQUE_MAX + STEERING_ANGLE_MAX  # agent가 취할 수 있는 행동의 차원
 
@@ -29,11 +29,11 @@ for _ in range(10):
 
     batch_size = 64
     mem_maxlen = 1000
-    discount_factor = 0.9
+    discount_factor = 0.95
     learning_rate = 0.00025
 
     train_start_step = 5000  # 초기 탐험
-    first_step = 80000 + train_start_step
+    first_step = 100000 + train_start_step
     run_step = first_step if train_mode else 0  # 훈련 스텝
     test_step = 1  # 테스트 스텝
     target_update_step = 100
@@ -49,7 +49,7 @@ for _ in range(10):
 
     # 유니티 환경 경로
     game = "AutoParking"
-    version = 132
+    version = 2
     env_name = f'../Env/ap-{version}'
 
     # 모델 저장 및 불러오기 경로
