@@ -71,6 +71,7 @@ namespace AutonomousParking.Agents
             ObservationsCollector.CollectAgentVelocityObservations(sensor);
 
             ObservationsCollector.CollectTargetTransformObservations(sensor);
+            ObservationsCollector.CollectParkingSuccessObservations(sensor);
             // CheckRayCast();
         }
 

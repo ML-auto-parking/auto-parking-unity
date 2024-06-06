@@ -8,11 +8,14 @@ namespace AutonomousParking.Agents.Components
     {
         private readonly ParkingAgentData agentData;
         private readonly ParkingAgentTargetData targetData;
+        private readonly ParkingAgentTargetTrackingData targetTrackingData;
 
-        public ParkingAgentObservationsCollector(ParkingAgentData agentData, ParkingAgentTargetData targetData)
+
+        public ParkingAgentObservationsCollector(ParkingAgentData agentData, ParkingAgentTargetData targetData, ParkingAgentTargetTrackingData targetTrackingData)
         {
             this.agentData = agentData;
             this.targetData = targetData;
+            this.targetTrackingData = targetTrackingData;
         }
 
         public void CollectAgentTransformObservations(VectorSensor sensor)
@@ -37,6 +40,12 @@ namespace AutonomousParking.Agents.Components
             sensor.AddObservation(targetPosition.x);
             sensor.AddObservation(targetPosition.z);
             sensor.AddObservation(targetTransform.rotation.eulerAngles.y);
+        }
+
+        public void CollectParkingSuccessObservations(VectorSensor sensor)
+        {
+            sensor.AddObservation(targetTrackingData.IsParked);
+            sensor.AddObservation(targetTrackingData.IsPerfectlyParked);
         }
     }
 }

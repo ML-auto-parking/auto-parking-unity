@@ -26,19 +26,21 @@ for _ in range(10):
     VECTOR_OBS = 0
     IMAGE_OBS = 1
     AGENT_POS_OBS = 2
+    AGNET_POS_STACK = 3
+    PARKING_SUCCESS_DIM = AGNET_POS_STACK * 2
 
     batch_size = 64
     mem_maxlen = 1000
-    discount_factor = 0.95
+    discount_factor = 0.97
     learning_rate = 0.00025
 
     train_start_step = 5000  # 초기 탐험
-    first_step = 100000 + train_start_step
+    first_step = 80000 + train_start_step
     run_step = first_step if train_mode else 0  # 훈련 스텝
     test_step = 1  # 테스트 스텝
     target_update_step = 100
 
-    print_interval = 10
+    print_interval = 20
     save_interval = 50
 
     epsilon_eval = 0.05
@@ -49,7 +51,7 @@ for _ in range(10):
 
     # 유니티 환경 경로
     game = "AutoParking"
-    version = 2
+    version = 6
     env_name = f'../Env/ap-{version}'
 
     # 모델 저장 및 불러오기 경로
@@ -60,7 +62,6 @@ for _ in range(10):
 
     # 연산 장치
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
     class DQN(torch.nn.Module):
         def __init__(self, vector_dim, agent_pos_dim, action_dim):
@@ -283,10 +284,12 @@ for _ in range(10):
                 "optimizer": self.optimizer.state_dict(),
             }, save_path + '/ckpt')
 
-        def write_summary(self, score, loss, epsilon, step):
-            self.writer.add_scalar("run/score", score, step)
-            self.writer.add_scalar("model/loss", loss, step)
-            self.writer.add_scalar("model/epsilon", epsilon, step)
+        def write_summary(self, score, loss, epsilon, parkingSuccess, parkingPerfectSuccess, episode):
+            self.writer.add_scalar("run/score", score, episode)
+            self.writer.add_scalar("run/is_parking_success", parkingSuccess, episode)
+            self.writer.add_scalar("run/is_parking_perfect_success", parkingPerfectSuccess, episode)
+            self.writer.add_scalar("model/loss", loss, episode)
+            self.writer.add_scalar("model/epsilon", epsilon, episode)
 
 
     # Main 함수
@@ -302,14 +305,22 @@ for _ in range(10):
 
         vector_obs = decision_steps.obs[VECTOR_OBS]
         agent_pos_obs = decision_steps.obs[AGENT_POS_OBS]
+        needed_agent_pos_obs = np.hstack((
+            agent_pos_obs[:, :9],
+            agent_pos_obs[:, 11:20],
+            agent_pos_obs[:, 22:31]
+        ))
+        parking_success_obs = agent_pos_obs[:, 31:33]
 
         vector_size = vector_obs.shape[1]
-        agents_pos_dim = agent_pos_obs.shape[1]
+        needed_agent_pos_obs = needed_agent_pos_obs.shape[1]
 
-        agent = DQNAgent(vector_size, agents_pos_dim)
-
-        losses, scores, episode, score = [], [], 0, 0
+        agent = DQNAgent(vector_size, needed_agent_pos_obs)
+        losses, scores, episode, score, ParkingSuccess, ParkingPerfectSuccess = [], [], 0, 0, 0, 0
         for step in range(run_step + test_step):
+            isSuccess = False
+            isPerfectSuccess = False
+
             if step == run_step:
                 if train_mode:
                     agent.save_model()
@@ -325,8 +336,15 @@ for _ in range(10):
                 vector = terminal_steps.obs[VECTOR_OBS]
                 agent_pos = terminal_steps.obs[AGENT_POS_OBS]
 
+            needed_agent_pos = np.hstack((
+                agent_pos[:, :9],
+                agent_pos[:, 11:20],
+                agent_pos[:, 22:31]
+            ))
+            parking_success = agent_pos[:, 31:33]
+
             if len(decision_steps) > 0:  # 에이전트가 존재하는지 확인
-                action = agent.get_action(vector, agent_pos, train_mode)
+                action = agent.get_action(vector, needed_agent_pos, train_mode)
                 action_tuple = ActionTuple()
                 action_tuple.add_discrete(action)  # 이산적 행동 (휠 토크, 조향 각도, 브레이크 상태)
 
@@ -337,15 +355,23 @@ for _ in range(10):
             else:
                 env.step()
 
-            # print("agent_pos: ", agent_pos)
-            # print("agent_pos shape: ", agent_pos.shape)
-            # print("vector: ", vector)
-            # print("vector shape: ", vector.shape)
-
             done = len(terminal_steps) > 0
             reward = terminal_steps.reward if done else decision_steps.reward
             next_vector = terminal_steps.obs[VECTOR_OBS] if done else decision_steps.obs[VECTOR_OBS]
             next_agent_pos = terminal_steps.obs[AGENT_POS_OBS] if done else decision_steps.obs[AGENT_POS_OBS]
+
+            next_needed_agent_pos = np.hstack((
+                next_agent_pos[:, :9],
+                next_agent_pos[:, 11:20],
+                next_agent_pos[:, 22:31]
+            ))
+            next_parking_success = next_agent_pos[:, 31:33]
+
+            if not isSuccess:
+                if next_parking_success[0][0] == 1:
+                    isSuccess = True
+                    if next_parking_success[0][1] == 1:
+                        isPerfectSuccess = True
 
             # print("terminal_steps reward: ", terminal_steps.reward)
             # print("decision_steps reward: ", decision_steps.reward)
@@ -355,7 +381,7 @@ for _ in range(10):
             print(f'Step: {step}, Reward: {reward[0]}, Score: {score}, Epsilon: {agent.epsilon:.4f}')
 
             if train_mode:
-                agent.append_sample(vector, agent_pos, action, reward, next_vector, next_agent_pos, [done])
+                agent.append_sample(vector, needed_agent_pos, action, reward, next_vector, next_needed_agent_pos, [done])
 
             if train_mode and step > max(batch_size, train_start_step):
                 loss = agent.train_model()
@@ -368,13 +394,18 @@ for _ in range(10):
                 episode += 1
                 scores.append(score)
                 score = 0
+                if isSuccess:
+                    ParkingSuccess += 1
+                    if isPerfectSuccess:
+                        ParkingPerfectSuccess += 1
 
                 # 게임 진행 상황 출력 및 텐서 보드에 보상과 손실함수 값 기록
                 if episode % print_interval == 0:
                     mean_score = np.mean(scores)
                     mean_loss = np.mean(losses)
-                    agent.write_summary(mean_score, mean_loss, agent.epsilon, step)
+                    agent.write_summary(mean_score, mean_loss, agent.epsilon, ParkingSuccess, ParkingPerfectSuccess, episode)
                     losses, scores = [], []
+                    ParkingSuccess, ParkingPerfectSuccess = 0, 0
 
                     print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " + \
                           f"Loss: {mean_loss:.4f} / Epsilon: {agent.epsilon:.4f}")
