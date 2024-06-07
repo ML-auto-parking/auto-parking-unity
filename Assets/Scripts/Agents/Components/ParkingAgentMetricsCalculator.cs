@@ -75,7 +75,7 @@ namespace AutonomousParking.Agents.Components
         }
 
         private float CalculateNormalizedDistanceToTarget() =>
-            data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+            data.DistanceToTarget.Normalize(data.MaxDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateNormalizedAngleToTarget() {
             return data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
