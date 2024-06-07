@@ -25,7 +25,7 @@ namespace AutonomousParking.Agents.Components
         public float CalculateReward() {// 보상 계산 함수
 
             // 효율성 보상 계산
-            float reward = CalculateRewardForInactivity(); // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
+            float reward = -0.3f; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
             // Debug.Log("inactivity reward: " + CalculateRewardForInactivity());
             // 정확도 보상 계산
             reward += CalculateRewardForDecreasingDistanceToTarget(); // 타겟까지의 거리 감소에 대한 보상 계산

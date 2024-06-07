@@ -42,15 +42,15 @@ namespace AutonomousParking.Agents.Components
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
 
             // Debug.Log("Distance to target: " + data.MaxDistanceToTarget);
-            if (data.DistanceToTarget < data.MaxDistanceToTarget && (agentData.StepCount - this.PastStepCountForDistance) > 100 )
-            {
-                this.PastStepCountForDistance = agentData.StepCount;
-                if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
-                    data.MaxDistanceToTarget = data.DistanceToTarget;
-                } else {
-                    data.MaxDistanceToTarget = data.MaxDistanceToTargetToGetRewardForDecreasingAngle;
-                }
-            }
+            // if (data.DistanceToTarget < data.MaxDistanceToTarget && (agentData.StepCount - this.PastStepCountForDistance) > 100 )
+            // {
+            //     this.PastStepCountForDistance = agentData.StepCount;
+            //     if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
+            //         data.MaxDistanceToTarget = data.DistanceToTarget;
+            //     } else {
+            //         data.MaxDistanceToTarget = data.MaxDistanceToTargetToGetRewardForDecreasingAngle;
+            //     }
+            // }
 
             // Debug.Log("Angle to target: " + data.MaxDistanceToTargetToGetRewardForDecreasingAngle);
             // if (data.DistanceToTarget < data.MaxDistanceToTargetToGetRewardForDecreasingAngle && (agentData.StepCount - this.PastStepCountForAngle) > 100 && (data.AngleToTarget < data.MaxAngleToTarget))
@@ -75,7 +75,7 @@ namespace AutonomousParking.Agents.Components
         }
 
         private float CalculateNormalizedDistanceToTarget() =>
-            data.DistanceToTarget.Normalize(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+            data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateNormalizedAngleToTarget() {
             return data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);

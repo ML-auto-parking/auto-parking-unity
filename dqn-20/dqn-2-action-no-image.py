@@ -35,12 +35,12 @@ for _ in range(10):
     learning_rate = 0.00025
 
     train_start_step = 5000  # 초기 탐험
-    first_step = 80000 + train_start_step
+    first_step = 1000000 + train_start_step
     run_step = first_step if train_mode else 0  # 훈련 스텝
     test_step = 1  # 테스트 스텝
     target_update_step = 100
 
-    print_interval = 20
+    print_interval = 10
     save_interval = 50
 
     epsilon_eval = 0.05
@@ -51,7 +51,7 @@ for _ in range(10):
 
     # 유니티 환경 경로
     game = "AutoParking"
-    version = 6
+    version = 7
     env_name = f'../Env/ap-{version}'
 
     # 모델 저장 및 불러오기 경로

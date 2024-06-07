@@ -273,10 +273,11 @@ class DQNAgent:
             "optimizer": self.optimizer.state_dict(),
         }, save_path + '/ckpt')
 
-    def write_summary(self, score, loss, epsilon, step):
-        self.writer.add_scalar("run/score", score, step)
-        self.writer.add_scalar("model/loss", loss, step)
-        self.writer.add_scalar("model/epsilon", epsilon, step)
+    def write_summary(self, score, loss, epsilon,sucess_episode,episode):
+        self.writer.add_scalar("run/score", score, episode)
+        self.writer.add_scalar("run/sucess_episode", sucess_episode, episode)
+        self.writer.add_scalar("model/loss", loss, episode)
+        self.writer.add_scalar("model/epsilon", epsilon, episode)
 
 # Main 함수
 if __name__ == '__main__':
@@ -301,7 +302,7 @@ if __name__ == '__main__':
     print("vector_size: ", vector_size)
     agent = DQNAgent(image_dim, vector_size)
 
-    losses, scores, episode, score = [], [], 0, 0
+    losses, scores, episode, score, success_episode = [], [], 0, 0, 0
     for step in range(run_step + test_step):
         if step == run_step:
             if train_mode:
@@ -353,6 +354,7 @@ if __name__ == '__main__':
                 agent.update_target()
 
         if done:
+            if (terminal_steps.reward >= 10000): success_episode += 1
             episode += 1
             scores.append(score)
             score = 0
@@ -361,7 +363,7 @@ if __name__ == '__main__':
             if episode % print_interval == 0:
                 mean_score = np.mean(scores)
                 mean_loss = np.mean(losses)
-                agent.write_summary(mean_score, mean_loss, agent.epsilon, step)
+                agent.write_summary(mean_score, mean_loss, agent.epsilon, success_episode, episode)
                 losses, scores = [], []
 
                 print(f"{episode} Episode / Step: {step} / Score: {mean_score:.2f} / " + \
