@@ -61,13 +61,18 @@ namespace AutonomousParking.Agents.Components
         // private float CalculateRewardForDecreasingDistanceToTarget() =>
         //     targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
         private float CalculateRewardForDecreasingDistanceToTarget(){
+            float result;
             if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) {
                 // Debug.Log("Decreasing Distance to Target: " + targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep);
-                return targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
+                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
             } else {
                 // Debug.Log("Decreasing Long Distance to Target: " + targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep);
-                return targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep;
+                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep;
+                if (result < 0)
+                    return result / 10;
             }
+
+            return result;
         }
 
         // 타겟까지의 각도 감소에 따른 보상을 계산합니다.
