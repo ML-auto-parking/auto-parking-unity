@@ -77,7 +77,7 @@ namespace AutonomousParking.Agents.Components
 
         // 타겟까지의 각도 감소에 따른 보상을 계산합니다.
         private float CalculateRewardForDecreasingAngleToTarget() {
-            return targetTrackingData.NormalizedAngleToTarget * rewardData.MaxRewardForDecreasingAngleToTargetPerStep;
+            return targetTrackingData.NormalizedAngleToTarget * rewardData.MaxRewardForDecreasingAngleToTargetPerStep * targetTrackingData.NormalizedDistanceToTargetForAngle;
         }
 
         // 주차에 성공했을 때의 보상을 계산합니다. 보상은 주차 시작 가능 단계 범위를 기준으로 계산됩니다.
