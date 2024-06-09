@@ -25,8 +25,8 @@ namespace AutonomousParking.Agents.Components
         {
             data.MaxDistanceToTarget = CalculateDistanceToTarget();
             data.MaxAngleToTarget = 65f;
-            this.PastStepCountForDistance = 0;
-            this.PastStepCountForAngle = 0;
+            // this.PastStepCountForDistance = 0;
+            // this.PastStepCountForAngle = 0;
         }
 
         public void CalculateTargetTrackingMetrics()
@@ -42,7 +42,7 @@ namespace AutonomousParking.Agents.Components
             data.IsPerfectlyParked = CalculateWhetherAgentIsPerfectlyParked();
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
 
-            // Debug.Log("Distance to target: " + data.MaxDistanceToTarget);
+            // Debug.Log("Distance to target: " + data.DistanceToTarget);
             if (data.DistanceToTarget < data.MaxDistanceToTarget)
             {
                 if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){

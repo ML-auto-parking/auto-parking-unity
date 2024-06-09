@@ -3,6 +3,7 @@ using AutonomousParking.Car;
 using AutonomousParking.Car.UserInput;
 using Unity.MLAgents.Actuators;
 using UnityEngine;
+using AutonomousParking.Agents.Data;
 
 namespace AutonomousParking.Agents.Components
 {
@@ -10,15 +11,17 @@ namespace AutonomousParking.Agents.Components
     {
         private readonly CarData carData;
         private readonly CarUserInputInterpreter interpreter;
+        private readonly ParkingAgentData agentData;
 
         // 이산 값의 범위 설정 (예: 10개의 이산 값으로 정밀도 증가)
         private const int NumDiscreteWheelTorqueValues = 5;
         private const int NumDiscreteSteeringAngleValues = 5;
 
-        public ParkingAgentActionsHandler(CarData carData)
+        public ParkingAgentActionsHandler(CarData carData, ParkingAgentData agentData)
         {
             this.carData = carData;
             interpreter = new CarUserInputInterpreter(carData);
+            this.agentData = agentData;
         }
 
         public void HandleInputActions(ActionBuffers actions)
@@ -26,23 +29,23 @@ namespace AutonomousParking.Agents.Components
             // 이산 액션 배열 크기 확인
             if (actions.DiscreteActions.Length < 2)
             {
-                Debug.LogError("Expected at least 3 discrete actions.");
+                Debug.LogError("Expected at least 2 discrete actions.");
                 return;
             }
 
             // 이산 액션 값을 연속 값으로 변환하여 사용
-            var discreteWheelTorque = actions.DiscreteActions[0];
-            var discreteSteeringAngle = actions.DiscreteActions[1];
+            agentData.CurrentWheelTorque = actions.DiscreteActions[0];
+            agentData.CurrentSteeringAngle = actions.DiscreteActions[1];
 
-            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(ConvertDiscreteToContinuous(discreteWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
-            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(ConvertDiscreteToContinuous(discreteSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
+            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(ConvertDiscreteToContinuous(agentData.CurrentWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
+            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(ConvertDiscreteToContinuous(agentData.CurrentSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
         }
 
         public void HandleHeuristicInputDiscreteActions(in ActionSegment<int> discreteActionsOut)
         {
             if (discreteActionsOut.Length < 2)
             {
-                Debug.LogError("Expected at least 3 discrete actions out.");
+                Debug.LogError("Expected at least 2 discrete actions out.");
                 return;
             }
 
