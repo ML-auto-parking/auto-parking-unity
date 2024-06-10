@@ -68,7 +68,7 @@ namespace AutonomousParking.Agents
         public override void CollectObservations(VectorSensor sensor)
         {
             ObservationsCollector.CollectAgentTransformObservations(sensor);
-            // ObservationsCollector.CollectAgentVelocityObservations(sensor);
+            ObservationsCollector.CollectAgentVelocityObservations(sensor);
 
             ObservationsCollector.CollectTargetTransformObservations(sensor);
             ObservationsCollector.CollectAgentActionObservations(sensor);
