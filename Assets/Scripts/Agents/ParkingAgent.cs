@@ -99,7 +99,7 @@ namespace AutonomousParking.Agents
 
         public override void Heuristic(in ActionBuffers actionsOut)
         {
-            ActionsHandler.HandleHeuristicInputDiscreteActions(actionsOut.DiscreteActions);
+            ActionsHandler.HandleHeuristicInputContinuousActions(actionsOut.ContinuousActions);
         }
 
         private void CheckRayCast()

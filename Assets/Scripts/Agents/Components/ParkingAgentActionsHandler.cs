@@ -13,10 +13,6 @@ namespace AutonomousParking.Agents.Components
         private readonly CarUserInputInterpreter interpreter;
         private readonly ParkingAgentData agentData;
 
-        // 이산 값의 범위 설정 (예: 10개의 이산 값으로 정밀도 증가)
-        private const int NumDiscreteWheelTorqueValues = 5;
-        private const int NumDiscreteSteeringAngleValues = 5;
-
         public ParkingAgentActionsHandler(CarData carData, ParkingAgentData agentData)
         {
             this.carData = carData;
@@ -26,68 +22,25 @@ namespace AutonomousParking.Agents.Components
 
         public void HandleInputActions(ActionBuffers actions)
         {
-            // 이산 액션 배열 크기 확인
-            if (actions.DiscreteActions.Length < 2)
-            {
-                Debug.LogError("Expected at least 2 discrete actions.");
-                return;
-            }
+            agentData.CurrentWheelTorque = actions.ContinuousActions[0];
+            agentData.CurrentSteeringAngle = actions.ContinuousActions[1];
+            
+            Debug.Log($"AgentData: WheelTorque={agentData.CurrentWheelTorque}, SteeringAngle={agentData.CurrentSteeringAngle}");
+            Debug.Log($"CarData: WheelTorque={carData.CurrentWheelTorque}, SteeringAngle={carData.CurrentSteeringAngle}");
 
-            // 이산 액션 값을 연속 값으로 변환하여 사용
-            agentData.CurrentWheelTorque = actions.DiscreteActions[0];
-            agentData.CurrentSteeringAngle = actions.DiscreteActions[1];
+            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(agentData.CurrentWheelTorque);
+            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(agentData.CurrentSteeringAngle);
 
-            carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(ConvertDiscreteToContinuous(agentData.CurrentWheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues));
-            carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(ConvertDiscreteToContinuous(agentData.CurrentSteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues));
+            Debug.Log($"Interpreted Wheel Torque: {carData.CurrentWheelTorque}");
+            Debug.Log($"Interpreted Steering Angle: {carData.CurrentSteeringAngle}");
+
+            Debug.Log($"CarData: WheelTorque={carData.CurrentWheelTorque}, SteeringAngle={carData.CurrentSteeringAngle}");
         }
 
-        public void HandleHeuristicInputDiscreteActions(in ActionSegment<int> discreteActionsOut)
+        public void HandleHeuristicInputContinuousActions(in ActionSegment<float> continuousActionsOut)
         {
-            if (discreteActionsOut.Length < 2)
-            {
-                Debug.LogError("Expected at least 2 discrete actions out.");
-                return;
-            }
-
-
-            discreteActionsOut[0] = ConvertContinuousToDiscrete(CarUserInputData.WheelTorque, -1f, 1f, NumDiscreteWheelTorqueValues);
-            discreteActionsOut[1] = ConvertContinuousToDiscrete(CarUserInputData.SteeringAngle, -1f, 1f, NumDiscreteSteeringAngleValues);
-        }
-
-        // 연속적인 값을 이산적인 값으로 변환하는 메서드
-        private int ConvertContinuousToDiscrete(float value, float minValue, float maxValue, int numDiscreteValues)
-        {
-            if (numDiscreteValues <= 1) return 0;
-
-            // Calculate the step size based on the given minValue, maxValue, and numDiscreteValues
-            float low = minValue + (maxValue - minValue) / (2 * (numDiscreteValues - 1));
-            float stepSize = (maxValue - minValue) / (numDiscreteValues - 1);
-            // Iterate through the number of discrete values to find the correct range
-            for (int i = 0; i < numDiscreteValues; i++)
-            {
-                float threshold = low + stepSize * i;
-                if (value <= threshold)
-                {
-                    return i;
-                }
-            }
-
-            // If value exceeds the maxValue, return the highest discrete value
-            return numDiscreteValues - 1;
-        }
-
-        // 이산적인 값을 연속적인 값으로 변환하는 메서드
-        private float ConvertDiscreteToContinuous(int discreteValue, float minValue, float maxValue, int numDiscreteValues)
-        {
-            if (numDiscreteValues <= 1) return minValue;
-
-            // Calculate the step size based on the given minValue, maxValue, and numDiscreteValues
-            float stepSize = (maxValue - minValue) / (numDiscreteValues - 1);
-
-            // Calculate the continuous value for the given discrete value
-            float continuousValue = minValue + stepSize * discreteValue;
-
-            return continuousValue;
+            continuousActionsOut[0] = CarUserInputData.WheelTorque;
+            continuousActionsOut[1] = CarUserInputData.SteeringAngle;
         }
     }
 }
