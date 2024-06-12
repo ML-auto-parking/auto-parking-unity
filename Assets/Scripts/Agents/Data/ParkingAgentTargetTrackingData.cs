@@ -15,8 +15,11 @@ namespace AutonomousParking.Agents.Data
 
         public float DistanceToTarget { get; set; }
         public float NormalizedDistanceToTarget { get; set; }
+        public float NormalizedAdditionalDistanceToTarget { get; set; }
+
         public float MinDistanceToTarget { get; set; }
         public float MaxDistanceToTarget { get; set; }
+        public float MaxAdditionalDistanceToTarget { get; set; }
 
         public float AngleToTarget { get; set; }
         public float NormalizedAngleToTarget { get; set; }

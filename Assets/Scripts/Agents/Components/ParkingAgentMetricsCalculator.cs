@@ -24,6 +24,7 @@ namespace AutonomousParking.Agents.Components
         public void CalculateInitialTargetTrackingMetrics()
         {
             data.MaxDistanceToTarget = CalculateDistanceToTarget();
+            data.MaxAdditionalDistanceToTarget = CalculateDistanceToTarget();
             data.MaxAngleToTarget = 65f;
             // this.PastStepCountForDistance = 0;
             // this.PastStepCountForAngle = 0;
@@ -37,6 +38,7 @@ namespace AutonomousParking.Agents.Components
             data.AngleToTarget = CalculateAngleToTarget();
             data.NormalizedAngleToTarget = CalculateNormalizedAngleToTarget();
             data.NormalizedDistanceToTargetForAngle = CalculateNormalizedDistanceToTargetForAngle();
+            data.NormalizedAdditionalDistanceToTarget = CalculateAdditionalNormalizedDistanceToTarget();
 
             data.IsParked = CalculateWhetherAgentIsParked();
             data.IsPerfectlyParked = CalculateWhetherAgentIsPerfectlyParked();
@@ -76,6 +78,9 @@ namespace AutonomousParking.Agents.Components
 
         private float CalculateNormalizedDistanceToTarget() =>
             data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+
+        private float CalculateAdditionalNormalizedDistanceToTarget() =>
+            data.DistanceToTarget.Normalize(data.MaxAdditionalDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateNormalizedAngleToTarget() {
             return data.AngleToTarget.Normalize(data.MaxAngleToTarget, data.MinAngleToTarget);
