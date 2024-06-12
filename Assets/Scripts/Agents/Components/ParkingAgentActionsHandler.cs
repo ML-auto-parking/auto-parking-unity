@@ -25,16 +25,8 @@ namespace AutonomousParking.Agents.Components
             agentData.CurrentWheelTorque = actions.ContinuousActions[0];
             agentData.CurrentSteeringAngle = actions.ContinuousActions[1];
             
-            Debug.Log($"AgentData: WheelTorque={agentData.CurrentWheelTorque}, SteeringAngle={agentData.CurrentSteeringAngle}");
-            Debug.Log($"CarData: WheelTorque={carData.CurrentWheelTorque}, SteeringAngle={carData.CurrentSteeringAngle}");
-
             carData.CurrentWheelTorque = interpreter.InterpretAsWheelTorque(agentData.CurrentWheelTorque);
             carData.CurrentSteeringAngle = interpreter.InterpretAsSteeringAngle(agentData.CurrentSteeringAngle);
-
-            Debug.Log($"Interpreted Wheel Torque: {carData.CurrentWheelTorque}");
-            Debug.Log($"Interpreted Steering Angle: {carData.CurrentSteeringAngle}");
-
-            Debug.Log($"CarData: WheelTorque={carData.CurrentWheelTorque}, SteeringAngle={carData.CurrentSteeringAngle}");
         }
 
         public void HandleHeuristicInputContinuousActions(in ActionSegment<float> continuousActionsOut)

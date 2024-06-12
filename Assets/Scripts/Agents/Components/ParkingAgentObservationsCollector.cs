@@ -43,12 +43,6 @@ namespace AutonomousParking.Agents.Components
 
         public void CollectAgentActionObservations(VectorSensor sensor)
         {
-            Debug.Log("Collecting Wheel torque: " + agentData.CurrentWheelTorque);
-            Debug.Log("Collecting Steering angle: " + agentData.CurrentSteeringAngle);
-
-            // Ensure agentData is updated correctly
-            Debug.Log($"AgentData: WheelTorque={agentData.CurrentWheelTorque}, SteeringAngle={agentData.CurrentSteeringAngle}");
-
             sensor.AddObservation(agentData.CurrentWheelTorque);
             sensor.AddObservation(agentData.CurrentSteeringAngle);
         }

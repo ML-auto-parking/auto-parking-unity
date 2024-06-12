@@ -12,6 +12,7 @@ namespace AutonomousParking.Agents.Components
         private readonly ParkingAgentData agentData; // 주차 에이전트 데이터
         private readonly ParkingAgentRewardData rewardData; // 주차 에이전트 보상 데이터
         private readonly ParkingAgentTargetTrackingData targetTrackingData; // 주차 에이전트 타겟 추적 데이터
+        private float maxDistanceReward = 0f;
         // 생성자
         public ParkingAgentRewardCalculator(ParkingAgentCollisionData agentCollisionData, ParkingAgentData agentData,
             ParkingAgentRewardData rewardData, ParkingAgentTargetTrackingData targetTrackingData)
@@ -65,16 +66,18 @@ namespace AutonomousParking.Agents.Components
             
         private float CalculateRewardForDecreasingDistanceToTarget(){
             float result;
+            Debug.Log("IsGettingRewardForDecreasingAngleToTarget: " + targetTrackingData.IsGettingRewardForDecreasingAngleToTarget);
             if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) {
-                // Debug.Log("Decreasing Distance to Target: " + targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep);
-                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
+                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep + maxDistanceReward;
             } else {
-                // Debug.Log("Decreasing Long Distance to Target: " + targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep);
                 result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep;
+                if (result > maxDistanceReward)
+                    maxDistanceReward = result;
+                Debug.Log("Max Distance Reward: " + maxDistanceReward);
                 if (result < 0)
                     return result / 20;
             }
-
+            Debug.Log("Decreasing Distance to Target: " + result);
             return result;
         }
 
