@@ -27,9 +27,8 @@ namespace AutonomousParking.Agents.Components
             // 효율성 보상 계산
             float reward = -0.5f; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
 
-            reward += CalculateRewardForDecreasingDistanceToTarget(); // 거리 감소에 대한 보상 계산
-            // Debug.Log("Decreasing Distance to Target: " + CalculateRewardForAdditionalDecreasingDistanceToTarget());
-            reward += CalculateRewardForAdditionalDecreasingDistanceToTarget(); // 추가적인 거리 감소에 대한 보상 계산
+            reward += targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
+
             // 정확도 보상 계산
             if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) { // 특정 거리 이내에 있는 경우
                 reward += CalculateRewardForDecreasingAngleToTarget(); // 각도 감소에 따른 보상 계산
