@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using AutonomousParking.Car.Creation;
 using AutonomousParking.Common.Extensions;
 using AutonomousParking.ParkingLot.Data;
@@ -13,6 +14,13 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         [SerializeField] private CarSpawner carSpawner;
         // ParkingLotData 객체에 대한 참조를 직렬화하여 인스펙터에서 설정할 수 있도록 합니다.
         [SerializeField] private ParkingLotData parkingLotData;
+        private System.Random random; // 명시적으로 System.Random을 사용
+
+        private void Awake()
+        {
+            // Random 객체 초기화
+            random = new System.Random();
+        }
 
         // Place 메소드는 주차장에 차량을 배치하는 로직을 수행합니다.
         public void Place()
@@ -34,10 +42,10 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
                 List<Transform> availableVerticalParkingSpots = parkingLotData.CurrentlyAvailableVerticalParkingSpots;
                 List<Transform> availableHorizontalParkingSpots = parkingLotData.CurrentlyAvailableHorizontalParkingSpots;
                 
-                // 차량이 배치될 주차 공간 수를 계산합니다.
-                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count - 1;
-                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count;
+                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count;
+                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count-1;
                 
+                // 차량이 배치될 주차 공간 수를 계산합니다.
                 List<Transform> totalParkingSpotsToOccupy = availableVerticalParkingSpots.ExtractRandomItems(occupiedVerticalParkingSpotsCount);
                 totalParkingSpotsToOccupy.AddRange(availableHorizontalParkingSpots.ExtractRandomItems(occupiedHorizontalParkingSpotsCount));
 
@@ -50,9 +58,9 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         public void Remove()
         {
             // CarSpawner를 통해 모든 차량을 제거합니다.
-            // carSpawner.DeSpawnAll();
+            carSpawner.DeSpawnAll();
             // 주차장 데이터를 초기 상태로 복원합니다.
-            // parkingLotData.Reset();
+            parkingLotData.Reset();
         }
     }
 }
