@@ -42,8 +42,8 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
                 List<Transform> availableVerticalParkingSpots = parkingLotData.CurrentlyAvailableVerticalParkingSpots;
                 List<Transform> availableHorizontalParkingSpots = parkingLotData.CurrentlyAvailableHorizontalParkingSpots;
                 
-                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count;
-                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count-1;
+                int occupiedVerticalParkingSpotsCount = availableVerticalParkingSpots.Count - 1;
+                int occupiedHorizontalParkingSpotsCount = availableHorizontalParkingSpots.Count;
                 
                 // 차량이 배치될 주차 공간 수를 계산합니다.
                 List<Transform> totalParkingSpotsToOccupy = availableVerticalParkingSpots.ExtractRandomItems(occupiedVerticalParkingSpotsCount);
@@ -58,9 +58,9 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         public void Remove()
         {
             // CarSpawner를 통해 모든 차량을 제거합니다.
-            carSpawner.DeSpawnAll();
+            // carSpawner.DeSpawnAll();
             // 주차장 데이터를 초기 상태로 복원합니다.
-            parkingLotData.Reset();
+            // parkingLotData.Reset();
         }
     }
 }
