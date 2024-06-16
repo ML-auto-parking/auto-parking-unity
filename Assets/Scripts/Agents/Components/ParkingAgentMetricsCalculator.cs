@@ -45,14 +45,14 @@ namespace AutonomousParking.Agents.Components
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
 
             // Debug.Log("Distance to target: " + data.DistanceToTarget);
-            if (data.DistanceToTarget < data.MaxDistanceToTarget)
-            {
-                if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
-                    data.MaxDistanceToTarget = data.DistanceToTarget;
-                } else {
-                    data.MaxDistanceToTarget = data.MaxDistanceToTargetToGetRewardForDecreasingAngle;
-                }
-            }
+            // if (data.DistanceToTarget < data.MaxDistanceToTarget)
+            // {
+            //     if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
+            //         data.MaxDistanceToTarget = data.DistanceToTarget;
+            //     } else {
+            //         data.MaxDistanceToTarget = data.MaxDistanceToTargetToGetRewardForDecreasingAngle;
+            //     }
+            // }
 
             // Debug.Log("Angle to target: " + data.MaxDistanceToTargetToGetRewardForDecreasingAngle);
             // if (data.DistanceToTarget < data.MaxDistanceToTargetToGetRewardForDecreasingAngle && (agentData.StepCount - this.PastStepCountForAngle) > 100 && (data.AngleToTarget < data.MaxAngleToTarget))
@@ -77,7 +77,7 @@ namespace AutonomousParking.Agents.Components
         }
 
         private float CalculateNormalizedDistanceToTarget() =>
-            data.DistanceToTarget.NormalizeWithNegative(data.MaxDistanceToTarget, data.MinDistanceToTarget);
+            data.DistanceToTarget.Normalize(data.MaxDistanceToTarget, data.MinDistanceToTarget);
 
         private float CalculateAdditionalNormalizedDistanceToTarget() =>
             data.DistanceToTarget.Normalize(data.MaxAdditionalDistanceToTarget, data.MinDistanceToTarget);

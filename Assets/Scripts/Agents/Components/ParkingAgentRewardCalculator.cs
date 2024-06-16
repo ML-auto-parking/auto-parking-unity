@@ -26,14 +26,9 @@ namespace AutonomousParking.Agents.Components
         public float CalculateReward() {// 보상 계산 함수
 
             // 효율성 보상 계산
-            float reward = -1f; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
+            float reward = rewardData.MaxRewardForInactivityPerStep; // 활발하지 않음(적게 움직이거나 불필요한 행동을 하는 경우)에 대한 보상 계산
 
             reward += CalculateRewardForDecreasingDistanceToTarget(); // 거리 감소에 대한 보상 계산
-            reward += CalculateRewardForAdditionalDecreasingDistanceToTarget(); // 추가적인 거리 감소에 대한 보상 계산
-            // 정확도 보상 계산
-            if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) { // 특정 거리 이내에 있는 경우
-                reward += CalculateRewardForDecreasingAngleToTarget(); // 각도 감소에 따른 보상 계산
-            }
 
             if (agentCollisionData.IsAnyCollision) // 충돌에 대한 보상 계산
             { 
@@ -48,11 +43,6 @@ namespace AutonomousParking.Agents.Components
                     reward += CalculateRewardForPerfectParking();
             }
 
-            // if (HasReachedMaxStep()) {
-            //     Debug.Log("Max Step reached: " + agentData.StepCount);
-            //     reward = -100f;
-            // }
-
             return reward;
         }
 
@@ -63,20 +53,9 @@ namespace AutonomousParking.Agents.Components
         private float CalculateRewardForAdditionalDecreasingDistanceToTarget() =>
             targetTrackingData.NormalizedAdditionalDistanceToTarget * rewardData.MaxRewardForAdditionalDecreasingDistanceToTargetPerStep;
             
-        private float CalculateRewardForDecreasingDistanceToTarget(){
-            float result;
-            if (targetTrackingData.IsGettingRewardForDecreasingAngleToTarget) {
-                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep + maxDistanceReward;
-            } else {
-                result = targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingLongDistanceToTargetPerStep;
-                if (result > maxDistanceReward)
-                    maxDistanceReward = result;
-                if (result < 0)
-                    return result / 20;
-            }
-            return result;
-        }
-
+        private float CalculateRewardForDecreasingDistanceToTarget() =>
+            targetTrackingData.NormalizedDistanceToTarget * rewardData.MaxRewardForDecreasingDistanceToTargetPerStep;
+            
         // 타겟까지의 각도 감소에 따른 보상을 계산합니다.
         private float CalculateRewardForDecreasingAngleToTarget() {
             return targetTrackingData.NormalizedAngleToTarget * rewardData.MaxRewardForDecreasingAngleToTargetPerStep * targetTrackingData.NormalizedDistanceToTargetForAngle;
