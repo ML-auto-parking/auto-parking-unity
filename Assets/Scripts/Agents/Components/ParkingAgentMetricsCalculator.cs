@@ -45,7 +45,6 @@ namespace AutonomousParking.Agents.Components
             data.IsPerfectlyParked = CalculateWhetherAgentIsPerfectlyParked();
             data.IsGettingRewardForDecreasingAngleToTarget = CalculateWhetherToGetRewardForDecreasingAngleToTarget();
 
-            // Debug.Log("Distance to target: " + data.DistanceToTarget);
             // if (data.DistanceToTarget < data.MaxDistanceToTarget)
             // {
             //     if (data.DistanceToTarget >= data.MaxDistanceToTargetToGetRewardForDecreasingAngle){
