@@ -39,6 +39,7 @@ namespace AutonomousParking.Agents.Components
             data.NormalizedAngleToTarget = CalculateNormalizedAngleToTarget();
             data.NormalizedDistanceToTargetForAngle = CalculateNormalizedDistanceToTargetForAngle();
             data.NormalizedAdditionalDistanceToTarget = CalculateAdditionalNormalizedDistanceToTarget();
+            data.NormalizedFacingDirectionToTarget = CalculateNormalizedFacingDirectionToTarget();
 
             data.IsParked = CalculateWhetherAgentIsParked();
             data.IsPerfectlyParked = CalculateWhetherAgentIsPerfectlyParked();
@@ -117,10 +118,27 @@ namespace AutonomousParking.Agents.Components
                 adjustedAngle <= targetData.PerfectParkingAngle;
         }
 
-        public float CalculateAngleToTarget()
+        private float CalculateAngleToTarget()
         {
             float angle = Quaternion.Angle(agentData.Transform.rotation, targetData.Transform.rotation);
             return AdjustAngleForMultipleOrientations(angle);
+        }
+
+        private float CalculateNormalizedFacingDirectionToTarget()
+        {
+            // 에이전트의 전방 방향 벡터
+            Vector3 agentForward = agentData.Transform.forward;
+
+            // 에이전트의 위치에서 목표 지점까지의 방향 벡터
+            Vector3 targetDirection = (targetData.Transform.position - agentData.Transform.position).normalized;
+
+            // 두 벡터 사이의 각도 계산
+            float angleToTarget = Vector3.Angle(agentForward, targetDirection);
+
+            // 각도를 0과 1 사이의 값으로 정규화 (0도 또는 180도 -> 1, 90도 -> 0)
+            float normalizedFacingDirection = Mathf.Abs(Mathf.Cos(Mathf.Deg2Rad * angleToTarget));
+
+            return normalizedFacingDirection;
         }
 
 

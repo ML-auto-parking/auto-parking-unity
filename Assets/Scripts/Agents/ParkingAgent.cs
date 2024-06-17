@@ -112,10 +112,7 @@ namespace AutonomousParking.Agents
 
             var rayOutputs = RayPerceptionSensor.Perceive(rayPerceptionSensor.GetRayPerceptionInput()).RayOutputs;
             int lengthOfRayOutputs = rayOutputs.Length;
-            //Debug.Log(lengthOfRayOutputs);
-            // Alternating Ray Order: it gives an order of
-            // (0, -delta, delta, -2delta, 2delta, ..., -ndelta, ndelta)
-            // index 0 indicates the center of raycasts
+
             for (int i = 0; i < lengthOfRayOutputs; i++)
             {
                 GameObject goHit = rayOutputs[i].HitGameObject;
