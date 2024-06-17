@@ -32,7 +32,6 @@ namespace AutonomousParking.Agents.Components
             {
                 reward += CalculateRewardForAdditionalDecreasingDistanceToTarget(); // 거리 감소 보상
                 reward += CalculateRewardForDecreasingAngleToTarget(); // 각도 감소 보상
-                Debug.Log("2: " + CalculateRewardForDecreasingAngleToTarget());
             }
             else {
                 reward += CalculateRewardForDecreasingDistanceToTarget(); // 거리 감소 보상
@@ -47,7 +46,6 @@ namespace AutonomousParking.Agents.Components
             if (targetTrackingData.IsParked) // 주차 완료에 대한 보상 계산
             {
                 reward += CalculateRewardForParking(); // 주차에 대한 보상 계산
-                Debug.Log("Success: " + CalculateRewardForParking());
                 if (targetTrackingData.IsPerfectlyParked) // 완벽한 주차에 대한 보상 계산
                     reward += CalculateRewardForPerfectParking();
             }
