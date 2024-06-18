@@ -58,9 +58,9 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
         public void Remove()
         {
             // CarSpawner를 통해 모든 차량을 제거합니다.
-            carSpawner.DeSpawnAll();
+            // carSpawner.DeSpawnAll();
             // 주차장 데이터를 초기 상태로 복원합니다.
-            parkingLotData.Reset();
+            // parkingLotData.Reset();
         }
     }
 }
