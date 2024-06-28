@@ -9,7 +9,8 @@ using UnityEngine.UI;
 using ParkingManager;
 using System.Collections.Generic;
 using AutonomousParking.ParkingLot.ObjectPlacers;
-using UnityEngine.UI;
+using AutonomousParking.ParkingLot.Data;
+using UnityEditorInternal;
 
 namespace AutonomousParking.Agents
 {   
@@ -21,11 +22,9 @@ namespace AutonomousParking.Agents
         public CarData CarData { get; set; }
         public ParkingAgentTargetData TargetData { get; set; }
         public ParkingAgentCollisionData CollisionData { get; set; }
-
         public ParkingLotEnteringCarPlacer AgentPlacer { get; set; }
         public ParkingLotAgentTargetPlacer TargetPlacer { get; set; }
         public ParkingLotParkedCarsPlacer ParkedCarsPlacer { get; set; }
-
         public ParkingAgentActionsHandler ActionsHandler { get; set; }
         public ParkingAgentMetricsCalculator MetricsCalculator { get; set; }
         public ParkingAgentRewardCalculator RewardCalculator { get; set; }
@@ -35,6 +34,8 @@ namespace AutonomousParking.Agents
         private RayPerceptionSensorComponent3D rayPerceptionSensor;
         public Text rewardText;
         public Text stepText;
+        public List<Component> EmptyCenter;
+
         public override void Initialize()
         {
             rayPerceptionSensor = GetComponentInChildren<RayPerceptionSensorComponent3D>();
@@ -56,13 +57,16 @@ namespace AutonomousParking.Agents
         {
             AgentData.Reset();
             CarData.Reset();
+            EmptyCenter.Clear();
             
             ParkedCarsPlacer.Remove();
             ParkedCarsPlacer.Place();
             AgentPlacer.Place(AgentData.Transform);
-            TargetPlacer.Place(TargetData.Transform, AgentData.Transform);
+            //Debug.Log(EmptyData1.Transform+"\n"+EmptyData2.Transform);
+            TargetPlacer.Place(TargetData.Transform, EmptyCenter, AgentData.Transform);
+            Debug.Log(TargetData.Transform.position+"\n"+EmptyCenter[0].transform.position+"\n"+EmptyCenter[1].transform.position);
 
-            MetricsCalculator.CalculateInitialTargetTrackingMetrics();
+            //MetricsCalculator.CalculateInitialTargetTrackingMetrics();
         }
 
         public override void CollectObservations(VectorSensor sensor)
@@ -79,7 +83,7 @@ namespace AutonomousParking.Agents
         public override void OnActionReceived(ActionBuffers actions)
         {
             ActionsHandler.HandleInputActions(actions);
-            MetricsCalculator.CalculateTargetTrackingMetrics();
+            if(AgentData.isInTargetArea) MetricsCalculator.CalculateTargetTrackingMetrics();
             AddReward(RewardCalculator.CalculateReward());
 
             // Debug.Log($"Step: {StepCount}, Reward: {RewardCalculator.CalculateReward()}, Cumulative Reward: {GetCumulativeReward()}"); // 누적 보상 출력
@@ -131,6 +135,13 @@ namespace AutonomousParking.Agents
                     Debug.Log(i+":"+dispStr);
                 }
             }
+        }
+        public void EnterArea(Transform Target)
+        {
+            AgentData.isInTargetArea = true;
+            TargetData.transform.position = Target.position;
+            TargetData.transform.rotation = Target.rotation;
+            Debug.Log(TargetData.Transform.position);
         }
     }
 }
