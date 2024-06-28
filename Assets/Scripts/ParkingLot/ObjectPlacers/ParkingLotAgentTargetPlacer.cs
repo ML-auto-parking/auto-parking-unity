@@ -9,14 +9,16 @@ namespace AutonomousParking.ParkingLot.ObjectPlacers
     {
         [SerializeField] private ParkingLotData parkingLotData;
 
-        public void Place(Transform target, Transform agent)
+        public void Place(Transform target,List<Component> Empty, Transform agent)
         {
-            Transform closestParkingSpot = FindClosestParkingSpot(parkingLotData.CurrentlyAvailableParkingSpots);
-            target.position = closestParkingSpot.position;
-            target.rotation = closestParkingSpot.rotation;
+            Empty.AddRange(parkingLotData.CurrentlyAvailableParkingSpots);
+            target.position=default;
+            //Transform closestParkingSpot = FindClosestParkingSpot(parkingLotData.CurrentlyAvailableParkingSpots);
+            //target.position = closestParkingSpot.position;
+            //target.rotation = closestParkingSpot.rotation;
 
-            Transform FindClosestParkingSpot(IEnumerable<Transform> availableParkingSpots) =>
-                availableParkingSpots.MinBy(parkingSpot => Vector3.Distance(agent.position, parkingSpot.position));
+            //Transform FindClosestParkingSpot(IEnumerable<Component> availableParkingSpots) =>
+                //availableParkingSpots.MinBy(parkingSpot => Vector3.Distance(agent.position, parkingSpot.position));
         }
     }
 }

@@ -10,6 +10,7 @@ namespace AutonomousParking.Agents.Data
         public int MaxStepToStartParking => Agent.MaxStep;
         public int StepCount => Agent.StepCount;
         public bool HasReachedMaxStep => Agent.StepCount == Agent.MaxStep;
+        public bool isInTargetArea = false;
 
         public ParkingAgent Agent { get; set; }
         public Rigidbody Rigidbody { get; set; }
