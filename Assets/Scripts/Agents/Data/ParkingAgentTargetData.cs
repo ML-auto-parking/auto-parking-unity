@@ -11,6 +11,55 @@ namespace AutonomousParking.Agents.Data
 
         public Transform Transform { get; private set; }
 
-        private void Awake() => Transform = transform;
+        private readonly Color parkingZoneColor = Color.red;
+        private readonly Color perfectParkingZoneColor = Color.green;
+
+        private Mesh parkingZoneMesh;
+        private Mesh perfectParkingZoneMesh;
+
+        private void Awake()
+        {
+            Transform = transform;
+            parkingZoneMesh = CreateCircleMesh(ParkingRadius);
+            perfectParkingZoneMesh = CreateCircleMesh(PerfectParkingRadius);
+        }
+
+        private void OnRenderObject()
+        {
+            DrawCircleMesh(parkingZoneMesh, parkingZoneColor);
+            DrawCircleMesh(perfectParkingZoneMesh, perfectParkingZoneColor);
+        }
+
+        private Mesh CreateCircleMesh(float radius)
+        {
+            int segments = 360;
+            Vector3[] vertices = new Vector3[segments + 1];
+            int[] indices = new int[segments * 2];
+
+            for (int i = 0; i <= segments; i++)
+            {
+                float angle = i * Mathf.Deg2Rad;
+                vertices[i] = new Vector3(Mathf.Cos(angle) * radius, 0, Mathf.Sin(angle) * radius);
+            }
+
+            for (int i = 0; i < segments; i++)
+            {
+                indices[i * 2] = i;
+                indices[i * 2 + 1] = i + 1;
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.vertices = vertices;
+            mesh.SetIndices(indices, MeshTopology.Lines, 0);
+            return mesh;
+        }
+
+        private void DrawCircleMesh(Mesh mesh, Color color)
+        {
+            Material material = new Material(Shader.Find("Hidden/Internal-Colored"));
+            material.SetPass(0);
+            material.color = color;
+            Graphics.DrawMeshNow(mesh, Transform.localToWorldMatrix);
+        }
     }
 }

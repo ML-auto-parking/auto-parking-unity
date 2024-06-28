@@ -10,6 +10,5 @@ namespace AutonomousParking.Car.UserInput
 
         public static float WheelTorque => Input.GetAxis(WheelTorqueAxisName);
         public static float SteeringAngle => Input.GetAxis(SteeringAngleAxisName);
-        public static bool IsBreaking => Input.GetKey(BrakingKeyCode);
     }
 }

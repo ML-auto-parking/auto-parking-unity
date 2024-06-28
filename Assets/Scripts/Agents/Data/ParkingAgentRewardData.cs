@@ -9,14 +9,17 @@ namespace AutonomousParking.Agents.Data
     // ParkingAgentRewardData 클래스는 주차 에이전트의 보상 관련 데이터를 저장합니다.
     public class ParkingAgentRewardData
     {
-        [field: Header("Target Reaching Rewards")]
-        [field: SerializeField] // 최소 활동에 대한 보상 값입니다. x축으로 평행이동 하는 값
-        public int Shift { get; private set; }
-        [field: SerializeField] // 최대 한계점을 설정
-        public int StepRewardThreshold { get; private set; }
+        [field: SerializeField]
+        public float MaxRewardForInactivityPerStep { get; private set; }
 
         [field: SerializeField] // 목표까지의 거리를 줄였을 때 단계별로 주어지는 최대 보상입니다.
         public float MaxRewardForDecreasingDistanceToTargetPerStep { get; private set; }
+
+        [field: SerializeField] // 목표까지의 각도를 줄였을 때 단계별로 주어지는 최대 보상입니다. (추가지급)
+        public float MaxRewardForAdditionalDecreasingDistanceToTargetPerStep { get; private set; }
+
+        [field: SerializeField] // 목표까지의 거리를 줄였을 때 단계별로 주어지는 최대 보상입니다.
+        public float MaxRewardForDecreasingLongDistanceToTargetPerStep { get; private set; }
         
         [field: SerializeField] // 목표까지의 각도를 줄였을 때 단계별로 주어지는 최대 보상입니다.
         public float MaxRewardForDecreasingAngleToTargetPerStep { get; private set; }

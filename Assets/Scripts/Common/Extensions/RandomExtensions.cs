@@ -24,7 +24,7 @@ namespace AutonomousParking.Common.Extensions
             source.RemoveRange(default, count);
             return extractedItems;
         }
-
+    
         public static IList<T> Shuffle<T>(this IList<T> source, int count)
         {
             for (var i = 0; i < count; i++)

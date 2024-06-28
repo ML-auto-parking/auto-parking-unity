@@ -15,6 +15,8 @@ namespace AutonomousParking.Agents.Data
         public ParkingAgent Agent { get; set; }
         public Rigidbody Rigidbody { get; set; }
         public Transform Transform { get; set; }
+        public float CurrentWheelTorque { get; set; } = 0;
+        public float CurrentSteeringAngle { get; set; } = 0;
 
         public void Reset() => Rigidbody.velocity = Rigidbody.angularVelocity = default;
     }
